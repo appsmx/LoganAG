@@ -74,20 +74,36 @@ export default function PersonForm({ person, onSaved, onCancel }: Props) {
 
       <div>
         <label className="text-xs text-bark-600">Nombre *</label>
-        <input className={inputCls} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        <input
+          className={inputCls}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
       </div>
       <div>
         <label className="text-xs text-bark-600">Apellidos</label>
-        <input className={inputCls} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        <input
+          className={inputCls}
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
       </div>
       <div>
         <label className="text-xs text-bark-600">Apodo</label>
-        <input className={inputCls} value={nickname} onChange={(e) => setNickname(e.target.value)} />
+        <input
+          className={inputCls}
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+        />
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="text-xs text-bark-600">Género</label>
-          <select className={inputCls} value={gender} onChange={(e) => setGender(e.target.value as PersonDTO["gender"])}>
+          <select
+            className={inputCls}
+            value={gender}
+            onChange={(e) => setGender(e.target.value as PersonDTO["gender"])}
+          >
             <option value="UNKNOWN">Sin especificar</option>
             <option value="FEMALE">Femenino</option>
             <option value="MALE">Masculino</option>
@@ -96,29 +112,55 @@ export default function PersonForm({ person, onSaved, onCancel }: Props) {
         </div>
         <div>
           <label className="text-xs text-bark-600">Nacimiento</label>
-          <input type="date" className={inputCls} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          <input
+            type="date"
+            className={inputCls}
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+          />
         </div>
       </div>
       <div>
         <label className="text-xs text-bark-600">Lugar de nacimiento</label>
-        <input className={inputCls} value={birthPlace} onChange={(e) => setBirthPlace(e.target.value)} />
+        <input
+          className={inputCls}
+          value={birthPlace}
+          onChange={(e) => setBirthPlace(e.target.value)}
+        />
       </div>
       <label className="flex items-center gap-2 text-sm text-bark-700">
-        <input type="checkbox" checked={isLiving} onChange={(e) => setIsLiving(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={isLiving}
+          onChange={(e) => setIsLiving(e.target.checked)}
+        />
         Persona viva
       </label>
       <div>
         <label className="text-xs text-bark-600">Notas / anécdota breve</label>
-        <textarea className={inputCls} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <textarea
+          className={inputCls}
+          rows={3}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-2">
-        <button type="submit" disabled={saving} className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700 disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700 disabled:opacity-60"
+        >
           {saving ? "Guardando…" : "Guardar"}
         </button>
-        <button type="button" onClick={onCancel} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+        >
           Cancelar
         </button>
       </div>

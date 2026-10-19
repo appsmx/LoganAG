@@ -28,7 +28,11 @@ export async function GET() {
     }),
   ]);
 
-  return NextResponse.json({ invitations, memberships, myRole: ctx.access.role });
+  return NextResponse.json({
+    invitations,
+    memberships,
+    myRole: ctx.access.role,
+  });
 }
 
 /** POST /api/invitations — invita a un familiar (solo OWNER, DEC-011). */
@@ -111,7 +115,10 @@ export async function DELETE(req: NextRequest) {
   const ctx = await resolveContext();
   if (isResponse(ctx)) return ctx;
   if (!ctx.access.isOwner) {
-    return NextResponse.json({ error: "Solo el dueño puede revocar." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Solo el dueño puede revocar." },
+      { status: 403 }
+    );
   }
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Falta el id." }, { status: 400 });
@@ -119,7 +126,8 @@ export async function DELETE(req: NextRequest) {
   const inv = await prisma.invitation.findFirst({
     where: { id, treeId: ctx.treeId },
   });
-  if (!inv) return NextResponse.json({ error: "No encontrada." }, { status: 404 });
+  if (!inv)
+    return NextResponse.json({ error: "No encontrada." }, { status: 404 });
 
   await prisma.invitation.update({
     where: { id },

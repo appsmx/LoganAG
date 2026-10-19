@@ -17,7 +17,10 @@ type Panel = "detail" | "new" | "link" | "ai" | "pets" | "invite";
 
 export default function ArbolPage() {
   const router = useRouter();
-  const [graph, setGraph] = useState<TreeGraph>({ persons: [], relationships: [] });
+  const [graph, setGraph] = useState<TreeGraph>({
+    persons: [],
+    relationships: [],
+  });
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
   const [me, setMe] = useState<string | null>(null);
@@ -40,7 +43,7 @@ export default function ArbolPage() {
     setGraph(g);
     setCanEdit(Boolean(data.access?.canEdit));
     setLoading(false);
-    setFocusId((prev) => prev ?? (g.persons[0]?.id ?? null));
+    setFocusId((prev) => prev ?? g.persons[0]?.id ?? null);
   }, [router]);
 
   useEffect(() => {
@@ -59,7 +62,8 @@ export default function ArbolPage() {
   const toggleCollapse = (id: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -82,24 +86,42 @@ export default function ArbolPage() {
         <div className="flex flex-wrap gap-2">
           {canEdit && (
             <>
-              <button onClick={() => setPanel("new")} className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700">
+              <button
+                onClick={() => setPanel("new")}
+                className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700"
+              >
                 + Persona
               </button>
-              <button onClick={() => setPanel("link")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+              <button
+                onClick={() => setPanel("link")}
+                className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+              >
                 Vincular
               </button>
-              <button onClick={() => setPanel("ai")} className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700">
+              <button
+                onClick={() => setPanel("ai")}
+                className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700"
+              >
                 🤖 Describir familia
               </button>
             </>
           )}
-          <button onClick={() => setPanel("pets")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+          <button
+            onClick={() => setPanel("pets")}
+            className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+          >
             🐾 Mascotas
           </button>
-          <button onClick={() => setPanel("invite")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+          <button
+            onClick={() => setPanel("invite")}
+            className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+          >
             👪 Familia
           </button>
-          <button onClick={logout} className="rounded-lg border border-bark-200 px-3 py-2 text-sm text-bark-500 hover:bg-bark-100">
+          <button
+            onClick={logout}
+            className="rounded-lg border border-bark-200 px-3 py-2 text-sm text-bark-500 hover:bg-bark-100"
+          >
             Salir
           </button>
         </div>
@@ -118,7 +140,11 @@ export default function ArbolPage() {
               Cargando árbol…
             </div>
           ) : graph.persons.length === 0 ? (
-            <EmptyState canEdit={canEdit} onAdd={() => setPanel("new")} onAi={() => setPanel("ai")} />
+            <EmptyState
+              canEdit={canEdit}
+              onAdd={() => setPanel("new")}
+              onAi={() => setPanel("ai")}
+            />
           ) : (
             <TreeCanvas
               graph={graph}
@@ -134,7 +160,8 @@ export default function ArbolPage() {
             />
           )}
           <p className="mt-2 text-xs text-bark-500">
-            Clic para seleccionar · doble clic para enfocar · − / + para colapsar o expandir ramas.
+            Clic para seleccionar · doble clic para enfocar · − / + para
+            colapsar o expandir ramas.
           </p>
         </section>
 
@@ -182,7 +209,9 @@ export default function ArbolPage() {
             />
           )}
 
-          {panel === "invite" && <InvitePanel onClose={() => setPanel("detail")} />}
+          {panel === "invite" && (
+            <InvitePanel onClose={() => setPanel("detail")} />
+          )}
 
           {panel === "detail" &&
             (selected ? (
@@ -230,13 +259,20 @@ function EmptyState({
       {canEdit ? (
         <>
           <p className="max-w-sm text-sm text-bark-600">
-            Empieza agregando a la primera persona, o describe a tu familia en lenguaje natural y deja que la IA la proponga.
+            Empieza agregando a la primera persona, o describe a tu familia en
+            lenguaje natural y deja que la IA la proponga.
           </p>
           <div className="flex gap-3">
-            <button onClick={onAdd} className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700">
+            <button
+              onClick={onAdd}
+              className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700"
+            >
               + Agregar persona
             </button>
-            <button onClick={onAi} className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700">
+            <button
+              onClick={onAi}
+              className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700"
+            >
               🤖 Describir familia
             </button>
           </div>
@@ -300,26 +336,48 @@ function PersonDetail({
   return (
     <div>
       <h2 className="text-lg font-bold text-bark-900">{fullName(person)}</h2>
-      {person.nickname && <p className="text-sm italic text-bark-600">«{person.nickname}»</p>}
+      {person.nickname && (
+        <p className="text-sm italic text-bark-600">«{person.nickname}»</p>
+      )}
       <dl className="mt-3 space-y-1 text-sm text-bark-700">
-        <Row label="Nacimiento" value={person.birthDate && new Date(person.birthDate).toLocaleDateString("es-MX")} />
+        <Row
+          label="Nacimiento"
+          value={
+            person.birthDate &&
+            new Date(person.birthDate).toLocaleDateString("es-MX")
+          }
+        />
         <Row label="Lugar" value={person.birthPlace} />
         {!person.isLiving && (
-          <Row label="Defunción" value={person.deathDate && new Date(person.deathDate).toLocaleDateString("es-MX")} />
+          <Row
+            label="Defunción"
+            value={
+              person.deathDate &&
+              new Date(person.deathDate).toLocaleDateString("es-MX")
+            }
+          />
         )}
         <Row label="Estado" value={person.isLiving ? "Viva" : "Fallecida"} />
       </dl>
       {person.notes && (
-        <p className="mt-3 rounded bg-bark-50 p-2 text-sm text-bark-700">{person.notes}</p>
+        <p className="mt-3 rounded bg-bark-50 p-2 text-sm text-bark-700">
+          {person.notes}
+        </p>
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <button onClick={onFocus} className="rounded-lg bg-leaf-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-leaf-700">
+        <button
+          onClick={onFocus}
+          className="rounded-lg bg-leaf-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-leaf-700"
+        >
           Enfocar
         </button>
         {canEdit && (
           <>
-            <button onClick={() => setEditing(true)} className="rounded-lg border border-bark-200 px-3 py-1.5 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+            <button
+              onClick={() => setEditing(true)}
+              className="rounded-lg border border-bark-200 px-3 py-1.5 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+            >
               Editar
             </button>
             <button
@@ -339,13 +397,19 @@ function PersonDetail({
       {/* Biografía narrada por IA (P2, DEC-003) */}
       <div className="mt-4 border-t border-bark-200 pt-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-bark-800">Biografía (IA)</h3>
+          <h3 className="text-sm font-semibold text-bark-800">
+            Biografía (IA)
+          </h3>
           <button
             onClick={generateBio}
             disabled={bioLoading}
             className="text-xs font-semibold text-leaf-600 hover:underline disabled:opacity-60"
           >
-            {bioLoading ? "Generando…" : bio ? "Regenerar" : "✨ Generar con IA"}
+            {bioLoading
+              ? "Generando…"
+              : bio
+                ? "Regenerar"
+                : "✨ Generar con IA"}
           </button>
         </div>
         {bioError && <p className="mt-1 text-xs text-red-600">{bioError}</p>}

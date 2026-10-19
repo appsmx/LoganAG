@@ -38,8 +38,8 @@ export default function PrivacidadPage() {
             Para construir tu árbol genealógico tratamos datos de las personas
             que tú registras: nombre, fechas y lugares de nacimiento o
             defunción, parentescos, fotografías, anécdotas y datos de mascotas.
-            Algunos de estos datos pueden corresponder a <strong>personas
-            vivas</strong>.
+            Algunos de estos datos pueden corresponder a{" "}
+            <strong>personas vivas</strong>.
           </p>
         </section>
 
@@ -50,8 +50,8 @@ export default function PrivacidadPage() {
           <p>
             Cuando registres datos de una persona viva, eres responsable de
             contar con su consentimiento. LoganAG te permite dejar constancia de
-            esa base legal. Tu árbol es <strong>privado por defecto</strong>: solo
-            tú y las personas que invites pueden verlo.
+            esa base legal. Tu árbol es <strong>privado por defecto</strong>:
+            solo tú y las personas que invites pueden verlo.
           </p>
         </section>
 
@@ -75,9 +75,9 @@ export default function PrivacidadPage() {
             Algunas funciones (como el alta de personas por lenguaje natural) se
             procesan con modelos de inteligencia artificial a través de la
             infraestructura de <strong>LOGAN OS</strong>. Como subencargados del
-            tratamiento participan <strong>Z.ai</strong> y <strong>Google
-            (Gemini)</strong>, exclusivamente para generar la respuesta
-            solicitada. No usamos tus datos para entrenar modelos.
+            tratamiento participan <strong>Z.ai</strong> y{" "}
+            <strong>Google (Gemini)</strong>, exclusivamente para generar la
+            respuesta solicitada. No usamos tus datos para entrenar modelos.
           </p>
         </section>
 
@@ -86,8 +86,8 @@ export default function PrivacidadPage() {
             6. Derechos ARCO
           </h2>
           <p>
-            Puedes acceder, rectificar, cancelar u oponerte al tratamiento de tus
-            datos. Para ejercer estos derechos, contáctanos a través de los
+            Puedes acceder, rectificar, cancelar u oponerte al tratamiento de
+            tus datos. Para ejercer estos derechos, contáctanos a través de los
             canales de soporte de LoganAG.
           </p>
         </section>

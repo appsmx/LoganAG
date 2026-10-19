@@ -15,8 +15,8 @@ function EntrarInner() {
     urlError === "invalid"
       ? "El enlace no es válido o ya caducó. Solicita uno nuevo."
       : urlError === "missing"
-      ? "Falta el token del enlace."
-      : null
+        ? "Falta el token del enlace."
+        : null
   );
 
   async function submit(e: React.FormEvent) {

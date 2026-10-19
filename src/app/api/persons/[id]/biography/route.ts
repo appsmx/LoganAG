@@ -23,7 +23,10 @@ export async function POST(
     include: { anecdotes: true },
   });
   if (!person) {
-    return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Persona no encontrada." },
+      { status: 404 }
+    );
   }
 
   const result = await generateBiography({

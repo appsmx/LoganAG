@@ -19,9 +19,7 @@ export default function TerminosPage() {
 
       <div className="mt-8 space-y-6 text-sm leading-relaxed">
         <section>
-          <h2 className="text-lg font-semibold text-bark-900">
-            1. Aceptación
-          </h2>
+          <h2 className="text-lg font-semibold text-bark-900">1. Aceptación</h2>
           <p>
             Al usar LoganAG aceptas estos términos. Si no estás de acuerdo, no
             utilices la plataforma.

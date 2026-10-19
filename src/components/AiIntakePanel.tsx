@@ -69,15 +69,21 @@ export default function AiIntakePanel({ onConfirmed, onClose }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-bark-900">🤖 Describir familia</h2>
-        <button onClick={onClose} className="text-sm text-bark-500 hover:text-bark-800">
+        <h2 className="text-lg font-bold text-bark-900">
+          🤖 Describir familia
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-sm text-bark-500 hover:text-bark-800"
+        >
           ✕
         </button>
       </div>
 
       <p className="rounded bg-leaf-100 p-2 text-xs text-leaf-700">
         Escribe en tus palabras. La IA propondrá a las personas y sus vínculos;
-        <strong> tú confirmas</strong> antes de guardar. Nada se guarda sin tu revisión.
+        <strong> tú confirmas</strong> antes de guardar. Nada se guarda sin tu
+        revisión.
       </p>
 
       {!proposal && (
@@ -113,7 +119,10 @@ export default function AiIntakePanel({ onConfirmed, onClose }: Props) {
             </h3>
             <ul className="mt-1 space-y-1 text-sm text-bark-700">
               {proposal.persons.map((p) => (
-                <li key={p.tempId} className="rounded border border-bark-200 bg-white px-2 py-1">
+                <li
+                  key={p.tempId}
+                  className="rounded border border-bark-200 bg-white px-2 py-1"
+                >
                   {p.firstName} {p.lastName ?? ""}
                   {p.birthPlace ? ` · ${p.birthPlace}` : ""}
                   {p.birthDate ? ` · ${p.birthDate}` : ""}
@@ -129,7 +138,10 @@ export default function AiIntakePanel({ onConfirmed, onClose }: Props) {
               </h3>
               <ul className="mt-1 space-y-1 text-sm text-bark-700">
                 {proposal.relationships.map((r, i) => (
-                  <li key={i} className="rounded border border-bark-200 bg-white px-2 py-1">
+                  <li
+                    key={i}
+                    className="rounded border border-bark-200 bg-white px-2 py-1"
+                  >
                     {r.type === "PARENT_CHILD"
                       ? `${nameByTemp(r.personARef)} → es padre/madre de → ${nameByTemp(r.personBRef)}`
                       : `${nameByTemp(r.personARef)} ↔ pareja de ↔ ${nameByTemp(r.personBRef)}`}

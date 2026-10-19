@@ -57,7 +57,8 @@ export async function generateBiography(
   } catch {
     return {
       ok: false,
-      error: "El narrador de IA no está disponible por ahora. Intenta más tarde.",
+      error:
+        "El narrador de IA no está disponible por ahora. Intenta más tarde.",
     };
   }
 }

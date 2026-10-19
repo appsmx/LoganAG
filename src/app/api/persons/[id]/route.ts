@@ -22,7 +22,10 @@ export async function PATCH(
     where: { id, treeId: ctx.treeId },
   });
   if (!existing) {
-    return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Persona no encontrada." },
+      { status: 404 }
+    );
   }
 
   let body: unknown;
@@ -77,7 +80,10 @@ export async function DELETE(
     where: { id, treeId: ctx.treeId },
   });
   if (!existing) {
-    return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Persona no encontrada." },
+      { status: 404 }
+    );
   }
 
   await prisma.person.delete({ where: { id } });

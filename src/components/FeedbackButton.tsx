@@ -11,7 +11,9 @@ const inputCls =
  */
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState<"SUGERENCIA" | "ERROR" | "OTRO">("SUGERENCIA");
+  const [type, setType] = useState<"SUGERENCIA" | "ERROR" | "OTRO">(
+    "SUGERENCIA"
+  );
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,7 +29,9 @@ export default function FeedbackButton() {
     e.preventDefault();
     setError(null);
     if (sharingPII && !consent) {
-      setError("Marca la casilla de consentimiento para incluir tu nombre o correo.");
+      setError(
+        "Marca la casilla de consentimiento para incluir tu nombre o correo."
+      );
       return;
     }
     setSending(true);
@@ -71,7 +75,9 @@ export default function FeedbackButton() {
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
             {done ? (
               <div className="text-center">
-                <p className="text-lg font-semibold text-leaf-700">¡Gracias! 🌳</p>
+                <p className="text-lg font-semibold text-leaf-700">
+                  ¡Gracias! 🌳
+                </p>
                 <p className="mt-2 text-sm text-bark-600">
                   Recibimos tus comentarios. Nos ayudan a mejorar LoganAG.
                 </p>
@@ -85,13 +91,23 @@ export default function FeedbackButton() {
             ) : (
               <form onSubmit={submit} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-bark-900">Enviar comentarios</h2>
-                  <button type="button" onClick={reset} className="text-bark-400 hover:text-bark-700">
+                  <h2 className="text-lg font-bold text-bark-900">
+                    Enviar comentarios
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="text-bark-400 hover:text-bark-700"
+                  >
                     ✕
                   </button>
                 </div>
 
-                <select className={inputCls} value={type} onChange={(e) => setType(e.target.value as typeof type)}>
+                <select
+                  className={inputCls}
+                  value={type}
+                  onChange={(e) => setType(e.target.value as typeof type)}
+                >
                   <option value="SUGERENCIA">Sugerencia</option>
                   <option value="ERROR">Reportar un error</option>
                   <option value="OTRO">Otro</option>
@@ -106,8 +122,19 @@ export default function FeedbackButton() {
                   required
                 />
 
-                <input className={inputCls} placeholder="Tu nombre (opcional)" value={name} onChange={(e) => setName(e.target.value)} />
-                <input className={inputCls} type="email" placeholder="Tu correo (opcional)" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <input
+                  className={inputCls}
+                  placeholder="Tu nombre (opcional)"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  className={inputCls}
+                  type="email"
+                  placeholder="Tu correo (opcional)"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
 
                 {/* honeypot oculto anti-spam */}
                 <input
@@ -123,10 +150,16 @@ export default function FeedbackButton() {
 
                 {sharingPII && (
                   <label className="flex items-start gap-2 text-xs text-bark-600">
-                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5"
+                    />
                     <span>
-                      Acepto que LoganAG use mi nombre y correo para dar seguimiento a este
-                      comentario, conforme al aviso de privacidad (LFPDPPP).
+                      Acepto que LoganAG use mi nombre y correo para dar
+                      seguimiento a este comentario, conforme al aviso de
+                      privacidad (LFPDPPP).
                     </span>
                   </label>
                 )}

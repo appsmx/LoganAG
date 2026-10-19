@@ -25,6 +25,7 @@
 | DEC-010 | Autenticación por enlace mágico (passwordless) | CRÍTICA |
 | DEC-011 | Invitaciones familiares con roles (dueño/colaborador/lector) | ESTRUCTURAL |
 | DEC-012 | Canal de feedback del usuario (estándar LOGAN) | OPERATIVA |
+| DEC-013 | Cimientos de calidad: ESLint + Prettier + Vitest + CI | ESTRUCTURAL |
 
 ---
 
@@ -145,6 +146,15 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Decisión:** Roles por membresía: `OWNER` (control total), `COLLABORATOR` (edita personas/vínculos/anécdotas), `VIEWER` (solo lectura). El dueño invita por correo; la invitación tiene token único, estado y expiración. Al aceptar, se crea una `Membership`.
 - **Justificación:** Una familia necesita que varios aporten sin que todos puedan borrar o reestructurar. Los roles ya están reservados en el esquema (DEC-005). Es la opción que soporta el caso real de uso.
 - **Consecuencias:** Toda operación de escritura valida el rol del usuario sobre el árbol. Las invitaciones se envían por Brevo (igual que el enlace mágico).
+- **Fecha:** 2026-10-19
+
+### DEC-013 — Cimientos de calidad: ESLint + Prettier + Vitest + CI
+- **Nivel:** ESTRUCTURAL
+- **Problema:** El proyecto creció sin red de seguridad; cada cambio podía romper algo en silencio.
+- **Alternativas:** (a) seguir sin tests/CI · (b) establecer herramientas de calidad antes de añadir más features.
+- **Decisión:** ESLint (flat config) + Prettier para estilo; Vitest para tests unitarios de la lógica pura (motor de layout del árbol, parseo de IA `extractJson`, permisos por rol); GitHub Actions (`.github/workflows/ci.yml`) que corre lint + typecheck + test + build en cada push/PR a `main`. Health check `GET /api/health` (BD + config LLM + mailer).
+- **Justificación:** Art. VI (la calidad se verifica, no se supone) y Art. III (construir sobre terreno firme). Los tests ya detectaron un bug real en `extractJson` (fallaba con prosa después del JSON) — corregido con recorte balanceado.
+- **Consecuencias:** Cada PR se valida automáticamente. La lógica de permisos se extrajo a `src/lib/permissions.ts` (función pura testeable).
 - **Fecha:** 2026-10-19
 
 ### DEC-012 — Canal de feedback del usuario (estándar LOGAN)

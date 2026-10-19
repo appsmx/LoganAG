@@ -101,7 +101,10 @@ export default function PetsPanel({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-bark-900">Mascotas 🐾</h2>
-        <button onClick={onClose} className="text-sm text-bark-500 hover:text-bark-800">
+        <button
+          onClick={onClose}
+          className="text-sm text-bark-500 hover:text-bark-800"
+        >
           ✕
         </button>
       </div>
@@ -111,15 +114,37 @@ export default function PetsPanel({
 
       {canEdit &&
         (adding ? (
-          <form onSubmit={add} className="space-y-2 rounded-lg border border-bark-200 bg-white p-3">
-            <input className={inputCls} placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-            <input className={inputCls} placeholder="Especie (perro, gato…)" value={species} onChange={(e) => setSpecies(e.target.value)} />
-            <textarea className={inputCls} rows={2} placeholder="Notas / anécdota" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <form
+            onSubmit={add}
+            className="space-y-2 rounded-lg border border-bark-200 bg-white p-3"
+          >
+            <input
+              className={inputCls}
+              placeholder="Nombre"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              className={inputCls}
+              placeholder="Especie (perro, gato…)"
+              value={species}
+              onChange={(e) => setSpecies(e.target.value)}
+            />
+            <textarea
+              className={inputCls}
+              rows={2}
+              placeholder="Notas / anécdota"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
             <div>
               <p className="mb-1 text-xs text-bark-600">Dueño(s):</p>
               <div className="max-h-28 space-y-1 overflow-auto">
                 {persons.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-sm text-bark-700">
+                  <label
+                    key={p.id}
+                    className="flex items-center gap-2 text-sm text-bark-700"
+                  >
                     <input
                       type="checkbox"
                       checked={ownerIds.includes(p.id)}
@@ -132,10 +157,17 @@ export default function PetsPanel({
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-leaf-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-leaf-700">
+              <button
+                type="submit"
+                className="rounded-lg bg-leaf-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-leaf-700"
+              >
                 Guardar
               </button>
-              <button type="button" onClick={() => setAdding(false)} className="rounded-lg border border-bark-200 px-3 py-1.5 text-xs font-semibold text-bark-700">
+              <button
+                type="button"
+                onClick={() => setAdding(false)}
+                className="rounded-lg border border-bark-200 px-3 py-1.5 text-xs font-semibold text-bark-700"
+              >
                 Cancelar
               </button>
             </div>
@@ -152,11 +184,16 @@ export default function PetsPanel({
       {loading ? (
         <p className="text-xs text-bark-500">Cargando…</p>
       ) : pets.length === 0 ? (
-        <p className="text-xs text-bark-500">Aún no hay mascotas registradas.</p>
+        <p className="text-xs text-bark-500">
+          Aún no hay mascotas registradas.
+        </p>
       ) : (
         <ul className="space-y-2">
           {pets.map((pet) => (
-            <li key={pet.id} className="rounded-lg border border-bark-200 bg-white p-2 text-sm">
+            <li
+              key={pet.id}
+              className="rounded-lg border border-bark-200 bg-white p-2 text-sm"
+            >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-bark-900">
@@ -164,12 +201,19 @@ export default function PetsPanel({
                     {pet.species ? ` · ${pet.species}` : ""}
                   </p>
                   <p className="text-xs text-bark-600">
-                    De: {pet.owners.map((o) => o.person.firstName).join(", ") || "—"}
+                    De:{" "}
+                    {pet.owners.map((o) => o.person.firstName).join(", ") ||
+                      "—"}
                   </p>
-                  {pet.notes && <p className="mt-1 text-bark-700">{pet.notes}</p>}
+                  {pet.notes && (
+                    <p className="mt-1 text-bark-700">{pet.notes}</p>
+                  )}
                 </div>
                 {canEdit && (
-                  <button onClick={() => remove(pet.id)} className="text-xs text-red-500 hover:underline">
+                  <button
+                    onClick={() => remove(pet.id)}
+                    className="text-xs text-red-500 hover:underline"
+                  >
                     Eliminar
                   </button>
                 )}

@@ -5,7 +5,7 @@
 // una profundidad limitada. Las ramas se pueden colapsar. Esto mantiene el lienzo
 // legible aunque el árbol tenga cientos de personas.
 
-import type { PersonDTO, RelationshipDTO, TreeGraph } from "./types";
+import type { PersonDTO, TreeGraph } from "./types";
 
 export interface LayoutNode {
   person: PersonDTO;
