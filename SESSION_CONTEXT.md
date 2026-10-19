@@ -19,12 +19,13 @@ Avance: árbol genealógico completo con auth, invitaciones, anécdotas, mascota
 - ✅ **Health check** `GET /api/health`: BD + config LLM + mailer.
 - Verificado: lint, `tsc --noEmit`, 16 tests y `next build` en verde (26 rutas).
 
-## Próximo objetivo (confirmado por el usuario)
-**Grupo B** en un nuevo PR tras verificar el Grupo A:
-- Carga de fotos (Cloudinary, ya usado en el ecosistema) para personas y mascotas.
-- Búsqueda de personas (saltar a cualquiera en árboles grandes).
-- Zoom y arrastre del lienzo del árbol.
-- Mejores estados de carga/vacío y errores visibles.
+## Entregado (Grupo B — rama feat/fotos-busqueda-zoom)
+- ✅ **Carga de fotos** (DEC-014): subida firmada a Cloudinary (`/api/uploads/sign` + `ImageUpload`), sin exponer secretos; fallback a URL manual. Fotos visibles en el nodo del árbol y en la ficha. Integrada en PersonForm.
+- ✅ **Búsqueda de personas**: `PersonSearch` en `/arbol` — filtra y salta/enfoca a cualquier persona (útil en árboles grandes).
+- ✅ **Zoom del lienzo**: botones +/−/1:1 y rueda con Ctrl/Cmd en TreeCanvas (viewBox escalado).
+- CI verde esperado: lint + tsc + 16 tests + build (27 rutas).
+
+Grupo A (previo, PR #5 merged): ESLint + Prettier + Vitest (16 tests) + CI GitHub Actions + health check. CI corroborado en verde.
 
 ## Backlog restante (Biblia §7)
 - P2: entrevista guiada con IA, vistas línea de tiempo / fan chart, mascota como nodo navegable.

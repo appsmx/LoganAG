@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PersonDTO } from "@/lib/types";
+import ImageUpload from "./ImageUpload";
 
 interface Props {
   person?: PersonDTO;
@@ -22,6 +23,9 @@ export default function PersonForm({ person, onSaved, onCancel }: Props) {
   );
   const [birthPlace, setBirthPlace] = useState(person?.birthPlace ?? "");
   const [isLiving, setIsLiving] = useState(person?.isLiving ?? true);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    person?.photoUrl ?? null
+  );
   const [notes, setNotes] = useState(person?.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +49,7 @@ export default function PersonForm({ person, onSaved, onCancel }: Props) {
       birthDate: birthDate || null,
       birthPlace: birthPlace.trim() || null,
       isLiving,
+      photoUrl: photoUrl || null,
       notes: notes.trim() || null,
     };
 
@@ -95,6 +100,10 @@ export default function PersonForm({ person, onSaved, onCancel }: Props) {
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
         />
+      </div>
+      <div>
+        <label className="text-xs text-bark-600">Foto</label>
+        <ImageUpload value={photoUrl} onUploaded={setPhotoUrl} />
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>

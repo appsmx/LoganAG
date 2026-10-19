@@ -26,6 +26,7 @@
 | DEC-011 | Invitaciones familiares con roles (dueño/colaborador/lector) | ESTRUCTURAL |
 | DEC-012 | Canal de feedback del usuario (estándar LOGAN) | OPERATIVA |
 | DEC-013 | Cimientos de calidad: ESLint + Prettier + Vitest + CI | ESTRUCTURAL |
+| DEC-014 | Carga de fotos vía Cloudinary con subida firmada | ESTRUCTURAL |
 
 ---
 
@@ -146,6 +147,15 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Decisión:** Roles por membresía: `OWNER` (control total), `COLLABORATOR` (edita personas/vínculos/anécdotas), `VIEWER` (solo lectura). El dueño invita por correo; la invitación tiene token único, estado y expiración. Al aceptar, se crea una `Membership`.
 - **Justificación:** Una familia necesita que varios aporten sin que todos puedan borrar o reestructurar. Los roles ya están reservados en el esquema (DEC-005). Es la opción que soporta el caso real de uso.
 - **Consecuencias:** Toda operación de escritura valida el rol del usuario sobre el árbol. Las invitaciones se envían por Brevo (igual que el enlace mágico).
+- **Fecha:** 2026-10-19
+
+### DEC-014 — Carga de fotos vía Cloudinary con subida firmada
+- **Nivel:** ESTRUCTURAL
+- **Problema:** Las personas tenían `photoUrl` pero no había forma de subir fotos; un árbol con caras es mucho más emotivo.
+- **Alternativas:** (a) subir el archivo a nuestro servidor y de ahí a storage · (b) subida firmada directa del navegador a Cloudinary.
+- **Decisión:** Subida firmada: el servidor genera una firma (`/api/uploads/sign`, requiere rol editor) y el navegador sube directo a Cloudinary. El API secret nunca viaja al cliente ni pasa por nuestro servidor. Fallback: si Cloudinary no está configurado, se puede pegar una URL de imagen.
+- **Justificación:** Cloudinary ya se usa en el ecosistema (Mariscos Quiroa, Mr. Trámite). La subida firmada evita exponer secretos y no carga nuestro servidor con archivos.
+- **Consecuencias:** Variables `CLOUDINARY_*` opcionales. Las fotos se muestran en el nodo del árbol y en la ficha.
 - **Fecha:** 2026-10-19
 
 ### DEC-013 — Cimientos de calidad: ESLint + Prettier + Vitest + CI

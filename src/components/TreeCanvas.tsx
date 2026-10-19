@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { TreeGraph } from "@/lib/types";
 import { computeLayout } from "@/lib/tree-layout";
 import { fullName } from "@/lib/utils";
@@ -33,6 +33,8 @@ export default function TreeCanvas({
   onSelect,
   selectedId,
 }: Props) {
+  const [zoom, setZoom] = useState(1);
+
   const layout = useMemo(() => {
     if (!focusId) return null;
     return computeLayout(graph, {
@@ -88,9 +90,46 @@ export default function TreeCanvas({
     });
   }
 
+  const clamp = (z: number) => Math.min(2, Math.max(0.4, z));
+
   return (
-    <div className="h-full w-full overflow-auto rounded-xl border border-bark-200 bg-white/40 p-2">
-      <svg width={width} height={height} className="mx-auto block">
+    <div className="relative h-full w-full overflow-auto rounded-xl border border-bark-200 bg-white/40 p-2">
+      {/* controles de zoom */}
+      <div className="absolute right-3 top-3 z-10 flex flex-col gap-1">
+        <button
+          onClick={() => setZoom((z) => clamp(z + 0.2))}
+          className="h-8 w-8 rounded-lg border border-bark-200 bg-white text-lg font-bold text-bark-700 shadow-sm hover:bg-bark-100"
+          aria-label="Acercar"
+        >
+          +
+        </button>
+        <button
+          onClick={() => setZoom((z) => clamp(z - 0.2))}
+          className="h-8 w-8 rounded-lg border border-bark-200 bg-white text-lg font-bold text-bark-700 shadow-sm hover:bg-bark-100"
+          aria-label="Alejar"
+        >
+          −
+        </button>
+        <button
+          onClick={() => setZoom(1)}
+          className="h-8 w-8 rounded-lg border border-bark-200 bg-white text-[10px] font-bold text-bark-700 shadow-sm hover:bg-bark-100"
+          aria-label="Restablecer zoom"
+        >
+          1:1
+        </button>
+      </div>
+      <svg
+        width={width * zoom}
+        height={height * zoom}
+        viewBox={`0 0 ${width} ${height}`}
+        className="mx-auto block"
+        onWheel={(e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            setZoom((z) => clamp(z - e.deltaY * 0.002));
+          }
+        }}
+      >
         {/* aristas */}
         {layout.edges.map((e, i) => {
           const a = pos.get(e.fromId);
@@ -135,13 +174,25 @@ export default function TreeCanvas({
                 onClick={() => onSelect(n.person.id)}
                 onDoubleClick={() => onFocus(n.person.id)}
               />
+              {n.person.photoUrl && (
+                <image
+                  href={n.person.photoUrl}
+                  x={8}
+                  y={NODE_H / 2 - 16}
+                  width={32}
+                  height={32}
+                  preserveAspectRatio="xMidYMid slice"
+                  clipPath="inset(0% round 16px)"
+                  className="pointer-events-none"
+                />
+              )}
               <text
-                x={NODE_W / 2}
+                x={n.person.photoUrl ? NODE_W / 2 + 14 : NODE_W / 2}
                 y={26}
                 textAnchor="middle"
                 className="pointer-events-none select-none fill-bark-900 text-[13px] font-semibold"
               >
-                {truncate(fullName(n.person), 20)}
+                {truncate(fullName(n.person), n.person.photoUrl ? 15 : 20)}
               </text>
               <text
                 x={NODE_W / 2}
