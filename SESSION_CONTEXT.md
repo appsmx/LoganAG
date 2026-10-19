@@ -46,9 +46,18 @@ Avance: Biblia con 9 decisiones (DEC-001..009), scaffold técnico y MVP del árb
 - IA que inventa/vincula mal (mitigar con confirmación humana obligatoria).
 - Datos de personas vivas sin base legal (mitigar con consentimiento + privado por defecto).
 
-## Próximo objetivo
-Entregar el scaffold técnico (PR #2) y luego el MVP del árbol (PR #3), respetando el stack DEC-007 y el modelo de datos del §5 de la Biblia.
+## Próximo objetivo (prioridad confirmada por el usuario)
+1. **Autenticación + invitaciones familiares** (modo colaborativo con roles dueño/colaborador/lector). El esquema ya lo reserva (Tree/Membership/Invitation/User). Reemplaza el "árbol demo" (`getOrCreateDemoTree`) por árboles reales por usuario.
+2. **UI de anécdotas y mascotas** (modelos `Anecdote` y `Pet`/`PetOwner` ya existen en el esquema).
+
+## Configuración de entorno (pendiente del usuario)
+- **Local (desarrollo):** archivo `.env` en la raíz (copiar de `.env.example`). Nunca se sube (está en `.gitignore`).
+- **Producción:** Vercel → Project → Settings → Environment Variables.
+- Tres variables: `DATABASE_URL` (de Neon, con `?sslmode=require`), `LOGAN_LLM_URL`, `LOGAN_LLM_SECRET`.
+- **Pendientes concretos:**
+  - El usuario creará la BD en Neon (próximo día) y correrá `prisma db push` localmente (o aplicará el SQL vía Neon SQL Editor). NO pegar `DATABASE_URL` en el chat (contiene credenciales).
+  - `LOGAN_LLM_SECRET`/`LOGAN_LLM_URL` aún por definir — confirmar valor/convención con el usuario o revisar LOGAN OS cuando toque conectar la IA en vivo. El código del cliente (`src/lib/llm.ts`) ya está listo esperando esas variables.
 
 ## Observaciones
 - La IA del producto NO usa llaves propias: todo pasa por `POST /api/llm` de LOGAN OS (Z.ai GLM primario, Gemini fallback). Fuente de verdad del inventario: `logan/os/ECOSYSTEM.md`.
-- Repo vacío al inicio; PRs se abren contra `main`.
+- Repo vacío al inicio; la rama default quedó como `docs/fundacion-logan` (ver pendiente #3 arriba).
