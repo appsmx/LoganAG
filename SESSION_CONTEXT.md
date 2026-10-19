@@ -19,6 +19,16 @@ Avance: árbol genealógico completo con auth, invitaciones, anécdotas, mascota
 - ✅ **Health check** `GET /api/health`: BD + config LLM + mailer.
 - Verificado: lint, `tsc --noEmit`, 16 tests y `next build` en verde (26 rutas).
 
+## Entregado (P2 — rama feat/linea-tiempo-entrevista-ia)
+- ✅ **Línea de tiempo familiar**: `src/lib/timeline.ts` (pura, con 5 tests) + `GET /api/timeline` + `TimelinePanel`. Eventos (nacimientos, defunciones, hitos/anécdotas fechadas) ordenados cronológicamente.
+- ✅ **Entrevista guiada por IA** (DEC-003): `src/lib/ai-interview.ts` + `POST /api/ai/interview` + `InterviewPanel`. La IA hace una pregunta a la vez para llenar huecos; no persiste (guía conversacional).
+- ✅ **Panel de admin de feedback** (DEC-015): `/admin/feedback` + `GET/PATCH /api/admin/feedback`, restringido por `ADMIN_EMAIL`.
+- Verificado: lint + tsc + 21 tests + build en verde (31 rutas).
+
+## Info de Neon aclarada al usuario
+- Plan Free de Neon = 100 proyectos (verificado oct-2025); proyectos AISLADOS entre sí → crear LoganAG NO afecta a los otros. Recomendado: proyecto nuevo dedicado `loganag`.
+- La app solo necesita `DATABASE_URL` (no pegarla en chat). Datos públicos útiles: región, nombre de BD, usar pooled URL para Prisma en Vercel.
+
 ## Entregado (Grupo B — rama feat/fotos-busqueda-zoom)
 - ✅ **Carga de fotos** (DEC-014): subida firmada a Cloudinary (`/api/uploads/sign` + `ImageUpload`), sin exponer secretos; fallback a URL manual. Fotos visibles en el nodo del árbol y en la ficha. Integrada en PersonForm.
 - ✅ **Búsqueda de personas**: `PersonSearch` en `/arbol` — filtra y salta/enfoca a cualquier persona (útil en árboles grandes).
