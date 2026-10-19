@@ -15,7 +15,11 @@ export async function GET() {
     where: { treeId: ctx.treeId },
     orderBy: { createdAt: "desc" },
     include: {
-      owners: { include: { person: { select: { id: true, firstName: true, lastName: true } } } },
+      owners: {
+        include: {
+          person: { select: { id: true, firstName: true, lastName: true } },
+        },
+      },
     },
   });
   return NextResponse.json({ pets });

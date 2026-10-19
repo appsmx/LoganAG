@@ -45,7 +45,10 @@ export async function proposeGraphFromText(
   description: string
 ): Promise<IntakeResult | IntakeError> {
   if (!description || description.trim().length < 3) {
-    return { ok: false, error: "Describe a tu familia con un poco más de detalle." };
+    return {
+      ok: false,
+      error: "Describe a tu familia con un poco más de detalle.",
+    };
   }
 
   let raw: string;
@@ -56,7 +59,7 @@ export async function proposeGraphFromText(
       temperature: 0.1,
       maxTokens: 2048,
     });
-  } catch (err) {
+  } catch {
     return {
       ok: false,
       error:
@@ -72,7 +75,10 @@ export async function proposeGraphFromText(
       ? parsed.relationships
       : [];
     if (persons.length === 0) {
-      return { ok: false, error: "No se identificaron personas en la descripción." };
+      return {
+        ok: false,
+        error: "No se identificaron personas en la descripción.",
+      };
     }
     return {
       ok: true,
@@ -85,7 +91,8 @@ export async function proposeGraphFromText(
   } catch {
     return {
       ok: false,
-      error: "No se pudo interpretar la respuesta del asistente. Intenta reformular.",
+      error:
+        "No se pudo interpretar la respuesta del asistente. Intenta reformular.",
     };
   }
 }

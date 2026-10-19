@@ -7,6 +7,7 @@
 import { prisma } from "./prisma";
 import type { TreeGraph } from "./types";
 import type { MembershipRole } from "@prisma/client";
+import { accessForRole } from "./permissions";
 
 /** Garantiza que todo usuario tenga al menos un árbol propio; devuelve su id. */
 export async function getOrCreatePrimaryTree(userId: string): Promise<string> {
@@ -46,7 +47,7 @@ export async function getAccess(
 
   // dueño directo
   if (tree.ownerId === userId) {
-    return { role: "OWNER", canView: true, canEdit: true, isOwner: true };
+    return accessForRole("OWNER");
   }
 
   const membership = await prisma.membership.findUnique({
@@ -54,24 +55,25 @@ export async function getAccess(
   });
   if (!membership) return null;
 
-  const role = membership.role;
-  return {
-    role,
-    canView: true,
-    canEdit: role === "OWNER" || role === "COLLABORATOR",
-    isOwner: role === "OWNER",
-  };
+  return accessForRole(membership.role);
 }
 
 /** Lanza si el usuario no puede ver / editar el árbol. */
-export async function assertCanView(treeId: string, userId: string): Promise<Access> {
+export async function assertCanView(
+  treeId: string,
+  userId: string
+): Promise<Access> {
   const a = await getAccess(treeId, userId);
   if (!a?.canView) throw new TreeAccessError("Sin acceso a este árbol.");
   return a;
 }
-export async function assertCanEdit(treeId: string, userId: string): Promise<Access> {
+export async function assertCanEdit(
+  treeId: string,
+  userId: string
+): Promise<Access> {
   const a = await getAccess(treeId, userId);
-  if (!a?.canEdit) throw new TreeAccessError("No tienes permiso para editar este árbol.");
+  if (!a?.canEdit)
+    throw new TreeAccessError("No tienes permiso para editar este árbol.");
   return a;
 }
 
@@ -85,7 +87,10 @@ export class TreeAccessError extends Error {
 /** Devuelve el grafo completo (personas + relaciones + mascotas) de un árbol. */
 export async function getTreeGraph(treeId: string): Promise<TreeGraph> {
   const [persons, relationships, pets] = await Promise.all([
-    prisma.person.findMany({ where: { treeId }, orderBy: { createdAt: "asc" } }),
+    prisma.person.findMany({
+      where: { treeId },
+      orderBy: { createdAt: "asc" },
+    }),
     prisma.relationship.findMany({ where: { treeId } }),
     prisma.pet.findMany({
       where: { treeId },

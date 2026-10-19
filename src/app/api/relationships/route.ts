@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ relationship }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Ese vínculo ya existe." }, { status: 409 });
+    return NextResponse.json(
+      { error: "Ese vínculo ya existe." },
+      { status: 409 }
+    );
   }
 }
 
@@ -72,7 +75,10 @@ export async function DELETE(req: NextRequest) {
     where: { id, treeId: ctx.treeId },
   });
   if (!existing) {
-    return NextResponse.json({ error: "Vínculo no encontrado." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Vínculo no encontrado." },
+      { status: 404 }
+    );
   }
   await prisma.relationship.delete({ where: { id } });
   return NextResponse.json({ ok: true });

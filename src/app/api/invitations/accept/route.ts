@@ -46,7 +46,10 @@ export async function POST(req: NextRequest) {
       where: { id: inv.id },
       data: { status: "EXPIRED" },
     });
-    return NextResponse.json({ error: "La invitación caducó." }, { status: 400 });
+    return NextResponse.json(
+      { error: "La invitación caducó." },
+      { status: 400 }
+    );
   }
 
   // Crear membresía (idempotente) + marcar invitación aceptada.

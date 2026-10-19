@@ -17,6 +17,9 @@ export function escapeHtml(input: string): string {
 }
 
 /** Nombre completo legible de una persona. */
-export function fullName(p: { firstName: string; lastName?: string | null }): string {
+export function fullName(p: {
+  firstName: string;
+  lastName?: string | null;
+}): string {
   return [p.firstName, p.lastName].filter(Boolean).join(" ");
 }

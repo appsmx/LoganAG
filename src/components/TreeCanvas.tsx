@@ -71,7 +71,9 @@ export default function TreeCanvas({
     arr.push(n);
     byRow.set(n.row, arr);
   }
-  const maxRowLen = Math.max(...Array.from(byRow.values()).map((a) => a.length));
+  const maxRowLen = Math.max(
+    ...Array.from(byRow.values()).map((a) => a.length)
+  );
   const width = Math.max(maxRowLen * CELL_W + 40, 480);
   const height = layout.rows * CELL_H + 40;
 
@@ -153,7 +155,14 @@ export default function TreeCanvas({
               {/* badge de mascotas (DEC-009): esquina superior derecha */}
               {petsByPerson.has(n.person.id) && (
                 <g className="pointer-events-none">
-                  <circle cx={NODE_W - 12} cy={12} r={11} fill="#f0e6d9" stroke="#8a5a2b" strokeWidth={1} />
+                  <circle
+                    cx={NODE_W - 12}
+                    cy={12}
+                    r={11}
+                    fill="#f0e6d9"
+                    stroke="#8a5a2b"
+                    strokeWidth={1}
+                  />
                   <text
                     x={NODE_W - 12}
                     y={16}

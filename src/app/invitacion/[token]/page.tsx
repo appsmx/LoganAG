@@ -40,12 +40,13 @@ export default function InvitacionPage({
 
   useEffect(() => {
     accept();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 text-center">
-      <h1 className="text-2xl font-bold text-bark-900">Invitación familiar 🌳</h1>
+      <h1 className="text-2xl font-bold text-bark-900">
+        Invitación familiar 🌳
+      </h1>
 
       {state === "accepting" && (
         <p className="mt-4 text-bark-600">Aceptando invitación…</p>
@@ -58,7 +59,8 @@ export default function InvitacionPage({
       {state === "needsAuth" && (
         <div className="mt-4 space-y-3">
           <p className="text-bark-600">
-            Primero inicia sesión; luego vuelve a abrir este enlace para aceptar.
+            Primero inicia sesión; luego vuelve a abrir este enlace para
+            aceptar.
           </p>
           <Link
             href="/entrar"
@@ -68,9 +70,7 @@ export default function InvitacionPage({
           </Link>
         </div>
       )}
-      {state === "error" && (
-        <p className="mt-4 text-red-600">{message}</p>
-      )}
+      {state === "error" && <p className="mt-4 text-red-600">{message}</p>}
     </main>
   );
 }

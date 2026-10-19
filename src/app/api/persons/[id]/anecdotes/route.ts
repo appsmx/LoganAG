@@ -19,7 +19,10 @@ export async function GET(
     where: { id, treeId: ctx.treeId },
   });
   if (!person) {
-    return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Persona no encontrada." },
+      { status: 404 }
+    );
   }
 
   const anecdotes = await prisma.anecdote.findMany({
@@ -45,7 +48,10 @@ export async function POST(
     where: { id, treeId: ctx.treeId },
   });
   if (!person) {
-    return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Persona no encontrada." },
+      { status: 404 }
+    );
   }
 
   let body: unknown;

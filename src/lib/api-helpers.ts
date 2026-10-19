@@ -26,7 +26,10 @@ export async function resolveContext(
   const resolvedTreeId = treeId ?? (await getOrCreatePrimaryTree(user.id));
   const access = await getAccess(resolvedTreeId, user.id);
   if (!access?.canView) {
-    return NextResponse.json({ error: "Sin acceso a este árbol." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Sin acceso a este árbol." },
+      { status: 403 }
+    );
   }
 
   return { userId: user.id, treeId: resolvedTreeId, access };

@@ -22,7 +22,12 @@ export async function sendMail(input: SendMailInput): Promise<SendMailResult> {
 
   if (!apiKey) {
     // Modo desarrollo: no se envía nada real.
-    console.info("[mailer:dev] correo simulado →", input.to, "·", input.subject);
+    console.info(
+      "[mailer:dev] correo simulado →",
+      input.to,
+      "·",
+      input.subject
+    );
     console.info("[mailer:dev] contenido:\n", input.text);
     return {
       delivered: false,

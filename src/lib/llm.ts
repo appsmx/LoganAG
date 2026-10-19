@@ -26,7 +26,10 @@ export interface LlmRequest {
 }
 
 export class LlmError extends Error {
-  constructor(message: string, readonly status?: number) {
+  constructor(
+    message: string,
+    readonly status?: number
+  ) {
     super(message);
     this.name = "LlmError";
   }
@@ -94,8 +97,44 @@ export function extractJson<T>(text: string): T {
   const start = candidate.indexOf("{");
   const startArr = candidate.indexOf("[");
   const from =
-    start === -1 ? startArr : startArr === -1 ? start : Math.min(start, startArr);
+    start === -1
+      ? startArr
+      : startArr === -1
+        ? start
+        : Math.min(start, startArr);
   if (from === -1) throw new LlmError("No se encontró JSON en la respuesta.");
-  const slice = candidate.slice(from).trim();
+
+  // Recorta hasta el cierre balanceado del JSON para ignorar prosa posterior.
+  const slice = sliceBalanced(candidate.slice(from));
   return JSON.parse(slice) as T;
+}
+
+/**
+ * Dado un texto que empieza con `{` o `[`, devuelve la subcadena hasta el cierre
+ * balanceado correspondiente, respetando llaves/corchetes dentro de strings.
+ */
+function sliceBalanced(s: string): string {
+  const open = s[0];
+  const close = open === "{" ? "}" : "]";
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === open) depth++;
+    else if (ch === close) {
+      depth--;
+      if (depth === 0) return s.slice(0, i + 1);
+    }
+  }
+  // Sin cierre balanceado: devolvemos lo que haya (JSON.parse reportará el error).
+  return s.trim();
 }

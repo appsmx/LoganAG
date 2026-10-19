@@ -11,8 +11,15 @@ export async function GET() {
 
   try {
     const graph = await getTreeGraph(ctx.treeId);
-    return NextResponse.json({ treeId: ctx.treeId, access: ctx.access, ...graph });
+    return NextResponse.json({
+      treeId: ctx.treeId,
+      access: ctx.access,
+      ...graph,
+    });
   } catch {
-    return NextResponse.json({ error: "No se pudo cargar el árbol." }, { status: 500 });
+    return NextResponse.json(
+      { error: "No se pudo cargar el árbol." },
+      { status: 500 }
+    );
   }
 }

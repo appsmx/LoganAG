@@ -21,7 +21,11 @@ async function main() {
   let tree = await prisma.tree.findFirst({ where: { ownerId: user.id } });
   if (!tree) {
     tree = await prisma.tree.create({
-      data: { name: "Familia Pérez López", ownerId: user.id, visibility: "PRIVATE" },
+      data: {
+        name: "Familia Pérez López",
+        ownerId: user.id,
+        visibility: "PRIVATE",
+      },
     });
     await prisma.membership.create({
       data: { treeId: tree.id, userId: user.id, role: "OWNER" },
@@ -66,11 +70,21 @@ async function main() {
 
   const parent = (aId: string, bId: string) =>
     prisma.relationship.create({
-      data: { treeId: tree!.id, type: "PARENT_CHILD", personAId: aId, personBId: bId },
+      data: {
+        treeId: tree!.id,
+        type: "PARENT_CHILD",
+        personAId: aId,
+        personBId: bId,
+      },
     });
   const partner = (aId: string, bId: string) =>
     prisma.relationship.create({
-      data: { treeId: tree!.id, type: "PARTNER", personAId: aId, personBId: bId },
+      data: {
+        treeId: tree!.id,
+        type: "PARTNER",
+        personAId: aId,
+        personBId: bId,
+      },
     });
 
   await partner(juan.id, rosa.id);
@@ -109,7 +123,8 @@ async function main() {
       name: "Firulais",
       species: "Perro",
       breed: "Mestizo",
-      notes: "El perro de la casa de los abuelos, querido por todos los nietos.",
+      notes:
+        "El perro de la casa de los abuelos, querido por todos los nietos.",
       owners: { create: [{ personId: juan.id }, { personId: rosa.id }] },
     },
   });
