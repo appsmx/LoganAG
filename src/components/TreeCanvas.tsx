@@ -43,6 +43,17 @@ export default function TreeCanvas({
     });
   }, [graph, focusId, collapsed]);
 
+  // Nº de mascotas por persona, para mostrar un badge 🐾 en su nodo (DEC-009).
+  const petsByPerson = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const pet of graph.pets ?? []) {
+      for (const ownerId of pet.ownerIds) {
+        m.set(ownerId, (m.get(ownerId) ?? 0) + 1);
+      }
+    }
+    return m;
+  }, [graph.pets]);
+
   if (!focusId || !layout || layout.nodes.length === 0) {
     return (
       <div className="flex h-full min-h-[320px] items-center justify-center text-bark-600">
@@ -138,6 +149,31 @@ export default function TreeCanvas({
               >
                 {lifeSpan(n.person)}
               </text>
+
+              {/* badge de mascotas (DEC-009): esquina superior derecha */}
+              {petsByPerson.has(n.person.id) && (
+                <g className="pointer-events-none">
+                  <circle cx={NODE_W - 12} cy={12} r={11} fill="#f0e6d9" stroke="#8a5a2b" strokeWidth={1} />
+                  <text
+                    x={NODE_W - 12}
+                    y={16}
+                    textAnchor="middle"
+                    className="select-none text-[11px]"
+                  >
+                    🐾
+                  </text>
+                  {petsByPerson.get(n.person.id)! > 1 && (
+                    <text
+                      x={NODE_W - 12}
+                      y={30}
+                      textAnchor="middle"
+                      className="select-none fill-bark-700 text-[9px] font-bold"
+                    >
+                      ×{petsByPerson.get(n.person.id)}
+                    </text>
+                  )}
+                </g>
+              )}
 
               {/* indicador de padres ocultos (arriba) */}
               {n.hasHiddenParents && (

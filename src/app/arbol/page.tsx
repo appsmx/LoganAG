@@ -174,7 +174,12 @@ export default function ArbolPage() {
           )}
 
           {panel === "pets" && (
-            <PetsPanel persons={graph.persons} canEdit={canEdit} onClose={() => setPanel("detail")} />
+            <PetsPanel
+              persons={graph.persons}
+              canEdit={canEdit}
+              onChanged={loadGraph}
+              onClose={() => setPanel("detail")}
+            />
           )}
 
           {panel === "invite" && <InvitePanel onClose={() => setPanel("detail")} />}
@@ -259,6 +264,25 @@ function PersonDetail({
   onDeleted: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
+  const [bio, setBio] = useState<string | null>(null);
+  const [bioLoading, setBioLoading] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
+
+  async function generateBio() {
+    setBioLoading(true);
+    setBioError(null);
+    setBio(null);
+    const res = await fetch(`/api/persons/${person.id}/biography`, {
+      method: "POST",
+    });
+    setBioLoading(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setBioError(data.error ?? "No se pudo generar la biografía.");
+      return;
+    }
+    setBio(data.biography);
+  }
 
   if (editing) {
     return (
@@ -309,6 +333,29 @@ function PersonDetail({
               Eliminar
             </button>
           </>
+        )}
+      </div>
+
+      {/* Biografía narrada por IA (P2, DEC-003) */}
+      <div className="mt-4 border-t border-bark-200 pt-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-bark-800">Biografía (IA)</h3>
+          <button
+            onClick={generateBio}
+            disabled={bioLoading}
+            className="text-xs font-semibold text-leaf-600 hover:underline disabled:opacity-60"
+          >
+            {bioLoading ? "Generando…" : bio ? "Regenerar" : "✨ Generar con IA"}
+          </button>
+        </div>
+        {bioError && <p className="mt-1 text-xs text-red-600">{bioError}</p>}
+        {bio && (
+          <div className="mt-2 rounded-lg border border-leaf-400 bg-leaf-100/60 p-2 text-sm text-bark-800">
+            <p className="whitespace-pre-wrap">{bio}</p>
+            <p className="mt-2 text-[10px] text-bark-500">
+              🤖 Texto generado por IA. Revísalo antes de darlo por bueno.
+            </p>
+          </div>
         )}
       </div>
 

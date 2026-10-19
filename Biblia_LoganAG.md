@@ -24,6 +24,7 @@
 | DEC-009 | Mascotas como entidad de primera clase ligada a personas | ESTRUCTURAL |
 | DEC-010 | Autenticación por enlace mágico (passwordless) | CRÍTICA |
 | DEC-011 | Invitaciones familiares con roles (dueño/colaborador/lector) | ESTRUCTURAL |
+| DEC-012 | Canal de feedback del usuario (estándar LOGAN) | OPERATIVA |
 
 ---
 
@@ -146,6 +147,14 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Consecuencias:** Toda operación de escritura valida el rol del usuario sobre el árbol. Las invitaciones se envían por Brevo (igual que el enlace mágico).
 - **Fecha:** 2026-10-19
 
+### DEC-012 — Canal de feedback del usuario (estándar LOGAN)
+- **Nivel:** OPERATIVA
+- **Problema:** El ecosistema LOGAN exige que toda app/landing tenga un canal "Enviar comentarios".
+- **Decisión:** Modelo `Feedback` (type sugerencia/error/otro, message, name?, email?, status nuevo/atendido) + endpoint público `POST /api/public/feedback` con validación Zod, rate-limit (3/min por IP) y honeypot anti-spam (campo oculto "website"). Botón flotante en toda la app con consentimiento LFPDPPP si se capturan nombre/correo.
+- **Justificación:** Estándar obligatorio del ecosistema (patrón Mariscos Quiroa / Hércules Bro). Nada de feedback se pierde.
+- **Consecuencias:** PII (name/email) opcional y con consentimiento. React escapa por defecto al mostrar; sin `dangerouslySetInnerHTML`.
+- **Fecha:** 2026-10-19
+
 ### DEC-009 — Mascotas como entidad de primera clase
 - **Nivel:** ESTRUCTURAL
 - **Problema:** Cómo representar mascotas, que "también forman parte de la familia".
@@ -203,13 +212,14 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 | ✅ Hecho | Autenticación (enlace mágico) + invitaciones familiares + roles | DEC-010, DEC-011 |
 | ✅ Hecho | UI de anécdotas/hitos por persona | Modelo `Anecdote` |
 | ✅ Hecho | UI de mascotas (ficha + dueños) | Modelo `Pet` (DEC-009) |
-| P1 | Presencia visual de mascotas dentro del lienzo del árbol | TreeCanvas |
-| P2 | IA: narración automática de biografías | Proxy LLM (DEC-003) |
+| ✅ Hecho | Presencia visual de mascotas en el lienzo (badge 🐾) | TreeCanvas |
+| ✅ Hecho | IA: narración automática de biografías | Proxy LLM (DEC-003) |
+| ✅ Hecho | Canal de feedback del usuario (estándar LOGAN) | DEC-012 |
 | P2 | IA: entrevista guiada de recuerdos | Proxy LLM (DEC-003) |
 | P2 | Vistas alternativas: línea de tiempo, fan chart | Grafo (DEC-006) |
+| P2 | Mascota como nodo propio navegable (no solo badge) | TreeCanvas |
 | P3 | Import/Export GEDCOM | Grafo (DEC-006) |
 | P3 | Internacionalización (i18n) | DEC-008 |
-| P3 | Canal de feedback del usuario (estándar LOGAN) | — |
 
 > **Nota de estándar LOGAN:** toda app del ecosistema debe incluir un canal de "Enviar comentarios" (modelo Feedback + endpoint público con rate-limit + honeypot). Registrado en backlog P3 para incorporarlo antes del lanzamiento.
 

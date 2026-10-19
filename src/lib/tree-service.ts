@@ -82,11 +82,15 @@ export class TreeAccessError extends Error {
   }
 }
 
-/** Devuelve el grafo completo (personas + relaciones) de un árbol. */
+/** Devuelve el grafo completo (personas + relaciones + mascotas) de un árbol. */
 export async function getTreeGraph(treeId: string): Promise<TreeGraph> {
-  const [persons, relationships] = await Promise.all([
+  const [persons, relationships, pets] = await Promise.all([
     prisma.person.findMany({ where: { treeId }, orderBy: { createdAt: "asc" } }),
     prisma.relationship.findMany({ where: { treeId } }),
+    prisma.pet.findMany({
+      where: { treeId },
+      include: { owners: { select: { personId: true } } },
+    }),
   ]);
 
   return {
@@ -109,6 +113,12 @@ export async function getTreeGraph(treeId: string): Promise<TreeGraph> {
       type: r.type,
       personAId: r.personAId,
       personBId: r.personBId,
+    })),
+    pets: pets.map((p) => ({
+      id: p.id,
+      name: p.name,
+      species: p.species,
+      ownerIds: p.owners.map((o) => o.personId),
     })),
   };
 }

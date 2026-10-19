@@ -56,10 +56,25 @@ Avance: Biblia con 9 decisiones (DEC-001..009), scaffold técnico y MVP del árb
 
 Verificado: `tsc --noEmit` y `next build` en verde (23 rutas).
 
+## Entregado (rama feat/mascotas-visuales-biografia-feedback)
+- ✅ Mascotas visibles en el lienzo del árbol: badge 🐾 (con contador) en el nodo de cada dueño. `/api/tree` y `getTreeGraph` ahora incluyen `pets`.
+- ✅ Narración de biografías con IA (P2): `src/lib/ai-biography.ts` + `POST /api/persons/[id]/biography`. Genera relato breve desde datos + anécdotas; se muestra con disclosure de IA, no se persiste automáticamente.
+- ✅ Canal de feedback (estándar LOGAN, DEC-012): modelo `Feedback`, `POST /api/public/feedback` (rate-limit 3/min por IP + honeypot), botón flotante `FeedbackButton` en toda la app con consentimiento LFPDPPP para PII.
+- Verificado: `tsc --noEmit` y `next build` en verde (25 rutas).
+
+## ⚠️ Estado de ramas (importante para retomar)
+- Los PRs #1/#2/#3 se mergearon ENCADENADOS a ramas intermedias (efecto del default branch bloqueado), por lo que **el código completo quedó en `feat/mvp-arbol-interactivo`**, NO en el default `docs/fundacion-logan` (que solo tiene el scaffold).
+- Esta rama parte de `feat/mvp-arbol-interactivo` (código completo). El PR debe consolidar hacia el default para que `docs/fundacion-logan` quede como fuente única.
+- **Pendiente de infraestructura:** el usuario debería renombrar en GitHub Settings la rama default a `main` (el gateway no me deja hacerlo). Al conectar Vercel, apuntar al branch que tenga el código completo.
+
+## Despliegue (plan del usuario)
+- NO requiere descargar el proyecto en la PC: el código vive en GitHub; Vercel redespliega solo en cada merge. Neon es solo la BD (no ejecuta la app).
+- Pasos: crear BD Neon → `prisma db push` → variables en Vercel (DATABASE_URL, LOGAN_LLM_URL=https://www.loganos.com/api/llm, LOGAN_LLM_SECRET copiado de LOGAN OS, AUTH_SECRET, APP_URL, BREVO_API_KEY/MAIL_FROM opcionales).
+- Dominio recomendado: Vercel gratis (loganag.vercel.app) ahora; LoganAG.com propio al validar (NO loganos.com/LoganAG — esa es la marca corporativa, DEC-LOGAN-001).
+- Brevo NO requiere web propia; solo cuenta + API key + remitente verificado. Sin Brevo, el enlace mágico se muestra en pantalla (modo dev).
+
 ## Próximo objetivo
-- Presencia visual de las mascotas dentro del lienzo del árbol (hoy tienen ficha pero no nodo visual).
-- Enriquecer la IA: narración de biografías (P2).
-- Antes de desplegar: BD Neon + `prisma db push` + variables en Vercel.
+- Entrevista guiada de recuerdos con IA (P2) · vistas línea de tiempo / fan chart (P2) · mascota como nodo navegable (P2).
 
 ## Configuración de entorno (pendiente del usuario)
 - **Local (desarrollo):** archivo `.env` en la raíz (copiar de `.env.example`). Nunca se sube (está en `.gitignore`).

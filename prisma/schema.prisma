@@ -298,3 +298,31 @@ model Consent {
   grantedAt   DateTime?
   createdAt   DateTime @default(now())
 }
+
+// ─────────────────────────────────────────────────────────────
+// Canal de feedback del usuario (estándar obligatorio del ecosistema LOGAN)
+// ─────────────────────────────────────────────────────────────
+
+model Feedback {
+  id        String         @id @default(cuid())
+  type      FeedbackType   @default(SUGERENCIA)
+  message   String
+  name      String?        // opcional (PII) — requiere consentimiento
+  email     String?        // opcional (PII) — requiere consentimiento
+  source    String?        // de dónde se envió (p.ej. "app", "landing")
+  status    FeedbackStatus @default(NUEVO)
+  createdAt DateTime       @default(now())
+
+  @@index([status])
+}
+
+enum FeedbackType {
+  SUGERENCIA
+  ERROR
+  OTRO
+}
+
+enum FeedbackStatus {
+  NUEVO
+  ATENDIDO
+}

@@ -22,10 +22,12 @@ const inputCls =
 export default function PetsPanel({
   persons,
   canEdit,
+  onChanged,
   onClose,
 }: {
   persons: PersonDTO[];
   canEdit: boolean;
+  onChanged?: () => void | Promise<void>;
   onClose: () => void;
 }) {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -86,11 +88,13 @@ export default function PetsPanel({
     setOwnerIds([]);
     setAdding(false);
     await load();
+    await onChanged?.();
   }
 
   async function remove(id: string) {
     await fetch(`/api/pets/${id}`, { method: "DELETE" });
     await load();
+    await onChanged?.();
   }
 
   return (
