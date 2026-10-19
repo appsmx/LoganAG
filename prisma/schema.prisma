@@ -1,0 +1,271 @@
+// LoganAG — Esquema de datos (grafo genealógico)
+// Metodología LOGAN · Biblia_LoganAG.md §5 · DEC-006 (grafo, no árbol estricto)
+//
+// El "árbol" visual es una VISTA DERIVADA del grafo de Person + Relationship.
+// El esquema reserva Anecdote, Pet, Membership, Invitation y Consent desde el
+// inicio (DEC-002, DEC-005, DEC-009) aunque su UI llegue post-MVP.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Usuarios y acceso (DEC-005: privado + invitaciones + roles)
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedTrees  Tree[]       @relation("TreeOwner")
+  memberships Membership[]
+  invitesSent Invitation[] @relation("InvitationInviter")
+}
+
+model Tree {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  // DEC-005: privado por defecto
+  visibility  Visibility @default(PRIVATE)
+  ownerId     String
+  owner       User     @relation("TreeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  persons       Person[]
+  relationships Relationship[]
+  pets          Pet[]
+  memberships   Membership[]
+  invitations   Invitation[]
+
+  @@index([ownerId])
+}
+
+enum Visibility {
+  PRIVATE
+  INVITE_ONLY
+  PUBLIC
+}
+
+model Membership {
+  id        String         @id @default(cuid())
+  treeId    String
+  tree      Tree           @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      MembershipRole @default(VIEWER)
+  createdAt DateTime       @default(now())
+
+  @@unique([treeId, userId])
+  @@index([userId])
+}
+
+enum MembershipRole {
+  OWNER
+  COLLABORATOR
+  VIEWER
+}
+
+model Invitation {
+  id        String           @id @default(cuid())
+  treeId    String
+  tree      Tree             @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  email     String
+  role      MembershipRole   @default(VIEWER)
+  token     String           @unique @default(cuid())
+  status    InvitationStatus @default(PENDING)
+  inviterId String
+  inviter   User             @relation("InvitationInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  expiresAt DateTime?
+
+  @@index([treeId])
+  @@index([email])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────────────────────────
+// Grafo genealógico (DEC-006)
+// ─────────────────────────────────────────────────────────────
+
+model Person {
+  id        String   @id @default(cuid())
+  treeId    String
+  tree      Tree     @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+  // Datos básicos
+  firstName   String
+  lastName    String?
+  nickname    String?
+  gender      Gender  @default(UNKNOWN)
+  birthDate   DateTime?
+  birthPlace  String?
+  deathDate   DateTime?
+  deathPlace  String?
+  photoUrl    String?
+  notes       String?
+
+  // Estado vital — relevante para privacidad (DEC-005)
+  isLiving    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones del grafo (una persona participa en muchas relaciones)
+  relationsAsA Relationship[] @relation("PersonA")
+  relationsAsB Relationship[] @relation("PersonB")
+
+  anecdotes Anecdote[]
+  pets      PetOwner[]
+  consent   Consent?
+
+  @@index([treeId])
+  @@index([treeId, lastName])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+// Relación tipada entre dos personas.
+// PARENT_CHILD: personA = progenitor, personB = hijo/a.
+// PARTNER:      personA y personB son pareja (orden no significativo).
+model Relationship {
+  id      String           @id @default(cuid())
+  treeId  String
+  tree    Tree             @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+  type    RelationshipType
+
+  personAId String
+  personA   Person @relation("PersonA", fields: [personAId], references: [id], onDelete: Cascade)
+  personBId String
+  personB   Person @relation("PersonB", fields: [personBId], references: [id], onDelete: Cascade)
+
+  // Matices
+  parentKind  ParentKind?   // solo PARENT_CHILD: biológico / adoptivo / etc.
+  partnerKind PartnerKind?  // solo PARTNER: casados / pareja / separados
+  startDate   DateTime?
+  endDate     DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([treeId, type, personAId, personBId])
+  @@index([treeId])
+  @@index([personAId])
+  @@index([personBId])
+}
+
+enum RelationshipType {
+  PARENT_CHILD
+  PARTNER
+}
+
+enum ParentKind {
+  BIOLOGICAL
+  ADOPTIVE
+  STEP
+  FOSTER
+  GUARDIAN
+}
+
+enum PartnerKind {
+  MARRIED
+  PARTNER
+  ENGAGED
+  SEPARATED
+  DIVORCED
+  WIDOWED
+}
+
+// ─────────────────────────────────────────────────────────────
+// Memoria familiar: anécdotas / hitos (backlog P1, modelo reservado)
+// ─────────────────────────────────────────────────────────────
+
+model Anecdote {
+  id        String       @id @default(cuid())
+  personId  String
+  person    Person       @relation(fields: [personId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      AnecdoteType @default(STORY)
+  date      DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([personId])
+}
+
+enum AnecdoteType {
+  STORY       // anécdota
+  MILESTONE   // hito
+  KEY_POINT   // punto clave
+}
+
+// ─────────────────────────────────────────────────────────────
+// Mascotas como entidad de primera clase (DEC-009)
+// ─────────────────────────────────────────────────────────────
+
+model Pet {
+  id        String   @id @default(cuid())
+  treeId    String
+  tree      Tree     @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  name      String
+  species   String?  // perro, gato, etc.
+  breed     String?
+  birthDate DateTime?
+  deathDate DateTime?
+  photoUrl  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owners PetOwner[]
+
+  @@index([treeId])
+}
+
+// Una mascota puede pertenecer a una o varias personas (familia)
+model PetOwner {
+  id       String @id @default(cuid())
+  petId    String
+  pet      Pet    @relation(fields: [petId], references: [id], onDelete: Cascade)
+  personId String
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([petId, personId])
+  @@index([personId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Consentimiento LFPDPPP para personas vivas (DEC-005)
+// ─────────────────────────────────────────────────────────────
+
+model Consent {
+  id          String   @id @default(cuid())
+  personId    String   @unique
+  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  granted     Boolean  @default(false)
+  grantedBy   String?  // quién registró el consentimiento
+  basis       String?  // base legal / nota
+  grantedAt   DateTime?
+  createdAt   DateTime @default(now())
+}
