@@ -133,6 +133,17 @@ export default function ArbolPage() {
         </p>
       )}
 
+      {graph.persons.length > 0 && (
+        <PersonSearch
+          persons={graph.persons}
+          onPick={(id) => {
+            setSelectedId(id);
+            setFocusId(id);
+            setPanel("detail");
+          }}
+        />
+      )}
+
       <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         <section className="min-h-[480px]">
           {loading ? (
@@ -244,6 +255,51 @@ export default function ArbolPage() {
   );
 }
 
+function PersonSearch({
+  persons,
+  onPick,
+}: {
+  persons: PersonDTO[];
+  onPick: (id: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const matches = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return [];
+    return persons
+      .filter((p) => fullName(p).toLowerCase().includes(term))
+      .slice(0, 6);
+  }, [q, persons]);
+
+  return (
+    <div className="relative mb-3">
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="🔍 Buscar persona en el árbol…"
+        className="w-full max-w-sm rounded-lg border border-bark-200 bg-white px-3 py-2 text-sm text-bark-900 focus:border-leaf-400 focus:outline-none"
+      />
+      {matches.length > 0 && (
+        <ul className="absolute z-20 mt-1 w-full max-w-sm overflow-hidden rounded-lg border border-bark-200 bg-white shadow-lg">
+          {matches.map((p) => (
+            <li key={p.id}>
+              <button
+                onClick={() => {
+                  onPick(p.id);
+                  setQ("");
+                }}
+                className="block w-full px-3 py-2 text-left text-sm text-bark-800 hover:bg-leaf-100"
+              >
+                {fullName(p)}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function EmptyState({
   canEdit,
   onAdd,
@@ -335,6 +391,14 @@ function PersonDetail({
 
   return (
     <div>
+      {person.photoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={person.photoUrl}
+          alt={fullName(person)}
+          className="mb-2 h-20 w-20 rounded-full object-cover"
+        />
+      )}
       <h2 className="text-lg font-bold text-bark-900">{fullName(person)}</h2>
       {person.nickname && (
         <p className="text-sm italic text-bark-600">«{person.nickname}»</p>
