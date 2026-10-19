@@ -2,8 +2,8 @@
 
 Proyecto: LoganAG
 Metodología: LOGAN v1.0
-Estado: Fundación — documentación aprobada, scaffold técnico en curso
-Avance: Biblia del proyecto creada con 9 decisiones (DEC-001 a DEC-009). Arranca la construcción del MVP.
+Estado: MVP construido — abiertos 3 PRs (fundación en main, scaffold #1, MVP #2)
+Avance: Biblia con 9 decisiones (DEC-001..009), scaffold técnico y MVP del árbol interactivo construidos y verificados (tsc + next build en verde).
 
 ## Objetivo completado en esta sesión
 - Fase de exploración (LOGAN Fase 1-2): se comprendió el problema y se confirmaron las decisiones de producto con el usuario.
@@ -25,9 +25,21 @@ Avance: Biblia del proyecto creada con 9 decisiones (DEC-001 a DEC-009). Arranca
 - `Biblia_LoganAG.md` (nuevo — autoridad del producto)
 - `SESSION_CONTEXT.md` (nuevo)
 
-## Pendientes
-- PR #2: scaffold técnico (Next.js + Prisma + esquema del grafo genealógico + páginas legales).
-- PR #3: MVP del árbol interactivo (CRUD personas + vínculos + visualización no-saturada + alta por lenguaje natural con IA).
+## Entregado en PRs
+- Fundación (Biblia + README + SESSION_CONTEXT): quedó en la rama default del repo.
+- PR #1 `feat/scaffold-tecnico`: Next.js 16 + Prisma (grafo genealógico) + proxy LLM + páginas legales.
+- PR #2 `feat/mvp-arbol-interactivo`: visualización no-saturada + CRUD personas/vínculos + alta por lenguaje natural con IA.
+
+## Pendientes (orden de merge)
+1. Mergear PR #1 (scaffold) en la rama default.
+2. Mergear PR #2 (MVP) después.
+3. Nota de infraestructura: el gateway no permitió renombrar el default branch a `main`; GitHub dejó `docs/fundacion-logan` como default. El usuario puede renombrarla a `main` desde Settings de GitHub (no afecta contenido).
+4. Antes de desplegar: crear BD Neon, configurar DATABASE_URL + LOGAN_LLM_URL/SECRET, `prisma db push`.
+
+## Próximas iteraciones (backlog Biblia §7)
+- P1: UI de anécdotas/hitos, UI de mascotas, autenticación + invitaciones familiares.
+- P2: narración de biografías con IA, entrevista guiada, vistas línea de tiempo / fan chart.
+- P3: import/export GEDCOM, i18n, canal de feedback (estándar LOGAN).
 
 ## Riesgos identificados
 - Saturación visual con familias grandes (mitigar con enfoque+contexto y colapso de ramas).
