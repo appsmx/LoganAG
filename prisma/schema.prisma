@@ -28,6 +28,35 @@ model User {
   ownedTrees  Tree[]       @relation("TreeOwner")
   memberships Membership[]
   invitesSent Invitation[] @relation("InvitationInviter")
+  sessions    Session[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// Autenticación por enlace mágico (DEC-010)
+// ─────────────────────────────────────────────────────────────
+
+// Token de un solo uso enviado por correo. Al abrirlo, se crea una Session.
+model MagicLink {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique // guardamos el hash, nunca el token en claro
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// Sesión persistida. La cookie del navegador guarda el hash de este token.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Tree {
@@ -268,4 +297,32 @@ model Consent {
   basis       String?  // base legal / nota
   grantedAt   DateTime?
   createdAt   DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Canal de feedback del usuario (estándar obligatorio del ecosistema LOGAN)
+// ─────────────────────────────────────────────────────────────
+
+model Feedback {
+  id        String         @id @default(cuid())
+  type      FeedbackType   @default(SUGERENCIA)
+  message   String
+  name      String?        // opcional (PII) — requiere consentimiento
+  email     String?        // opcional (PII) — requiere consentimiento
+  source    String?        // de dónde se envió (p.ej. "app", "landing")
+  status    FeedbackStatus @default(NUEVO)
+  createdAt DateTime       @default(now())
+
+  @@index([status])
+}
+
+enum FeedbackType {
+  SUGERENCIA
+  ERROR
+  OTRO
+}
+
+enum FeedbackStatus {
+  NUEVO
+  ATENDIDO
 }

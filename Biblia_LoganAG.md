@@ -22,6 +22,9 @@
 | DEC-007 | Stack: Next.js 16 + TS + Tailwind + Prisma + Postgres (Neon) + Vercel | ESTRUCTURAL |
 | DEC-008 | Idioma principal: español (México) | OPERATIVA |
 | DEC-009 | Mascotas como entidad de primera clase ligada a personas | ESTRUCTURAL |
+| DEC-010 | Autenticación por enlace mágico (passwordless) | CRÍTICA |
+| DEC-011 | Invitaciones familiares con roles (dueño/colaborador/lector) | ESTRUCTURAL |
+| DEC-012 | Canal de feedback del usuario (estándar LOGAN) | OPERATIVA |
 
 ---
 
@@ -81,7 +84,7 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Alternativas:** (a) llaves de IA propias (OpenAI/otros) · (b) proxy LLM centralizado de LOGAN OS.
 - **Decisión:** Toda la IA pasa por el proxy LLM de LOGAN OS (`POST /api/llm`), que cascada entre proveedores. Proveedores reales: Z.ai (GLM, primario) y Google/Gemini (fallback). Sin llaves propias ni OpenAI.
 - **Justificación:** Estándar oficial del ecosistema LOGAN; centraliza costos, failover y cumplimiento. En avisos de privacidad se declaran Z.ai y Google como subencargados vía LOGAN OS (LFPDPPP).
-- **Consecuencias:** LoganAG necesita el secreto Bearer para consumir `/api/llm` (`LOGAN_LLM_SECRET`). La fuente de verdad del inventario de proveedores es `logan/os/ECOSYSTEM.md`.
+- **Consecuencias:** LoganAG necesita el secreto Bearer para consumir `/api/llm` (`LOGAN_LLM_SECRET`, copiado del Vercel de LOGAN OS, no se crea nuevo). Endpoint canónico verificado en vivo: `https://www.loganos.com/api/llm` (LOGAN OS está activo en loganos.com; `loganos.com` sin `www` redirige 308 a `www`). Contrato real del proxy: `POST { task, systemPrompt, userMessage, history?, temperature?, maxTokens?, project? }` → `{ text, provider, model }`. La fuente de verdad del inventario de proveedores es `logan/os/ECOSYSTEM.md`.
 - **Fecha:** 2026-10-19
 
 ### DEC-004 — Primera función de IA estrella: alta por lenguaje natural
@@ -124,6 +127,32 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Nivel:** OPERATIVA
 - **Decisión:** Español (México) como idioma de toda la interfaz y contenido del MVP.
 - **Justificación:** Público objetivo mexicano. Internacionalización en backlog.
+- **Fecha:** 2026-10-19
+
+### DEC-010 — Autenticación por enlace mágico (passwordless)
+- **Nivel:** CRÍTICA
+- **Problema:** Cómo inician sesión los usuarios para habilitar árboles reales por usuario e invitaciones (DEC-005).
+- **Alternativas:** (a) enlace mágico por correo (sin contraseña) · (b) correo + contraseña · (c) inicio social (Google).
+- **Decisión:** Enlace mágico por correo. El usuario introduce su correo, recibe un enlace de un solo uso con expiración, y al abrirlo queda autenticado. La sesión se mantiene con una cookie firmada.
+- **Justificación:** Menor fricción para un público familiar (incluye adultos mayores), sin contraseñas que gestionar/filtrar. Reutiliza el proveedor de correo del ecosistema (Brevo). Simplicidad (Art. III).
+- **Consecuencias:** Se requiere modelo `MagicLink`/`Session`, envío de correo (Brevo), y un `AUTH_SECRET` para firmar sesiones. El árbol demo (`getOrCreateDemoTree`) se reemplaza por árboles del usuario autenticado. En desarrollo, si no hay Brevo configurado, el enlace se muestra en consola/respuesta para pruebas.
+- **Fecha:** 2026-10-19
+
+### DEC-011 — Invitaciones familiares y roles
+- **Nivel:** ESTRUCTURAL
+- **Problema:** Cómo colaboran varios miembros de la familia en un mismo árbol (DEC-005).
+- **Alternativas:** (a) un solo dueño edita, el resto solo lee · (b) roles diferenciados (dueño / colaborador / lector) por invitación.
+- **Decisión:** Roles por membresía: `OWNER` (control total), `COLLABORATOR` (edita personas/vínculos/anécdotas), `VIEWER` (solo lectura). El dueño invita por correo; la invitación tiene token único, estado y expiración. Al aceptar, se crea una `Membership`.
+- **Justificación:** Una familia necesita que varios aporten sin que todos puedan borrar o reestructurar. Los roles ya están reservados en el esquema (DEC-005). Es la opción que soporta el caso real de uso.
+- **Consecuencias:** Toda operación de escritura valida el rol del usuario sobre el árbol. Las invitaciones se envían por Brevo (igual que el enlace mágico).
+- **Fecha:** 2026-10-19
+
+### DEC-012 — Canal de feedback del usuario (estándar LOGAN)
+- **Nivel:** OPERATIVA
+- **Problema:** El ecosistema LOGAN exige que toda app/landing tenga un canal "Enviar comentarios".
+- **Decisión:** Modelo `Feedback` (type sugerencia/error/otro, message, name?, email?, status nuevo/atendido) + endpoint público `POST /api/public/feedback` con validación Zod, rate-limit (3/min por IP) y honeypot anti-spam (campo oculto "website"). Botón flotante en toda la app con consentimiento LFPDPPP si se capturan nombre/correo.
+- **Justificación:** Estándar obligatorio del ecosistema (patrón Mariscos Quiroa / Hércules Bro). Nada de feedback se pierde.
+- **Consecuencias:** PII (name/email) opcional y con consentimiento. React escapa por defecto al mostrar; sin `dangerouslySetInnerHTML`.
 - **Fecha:** 2026-10-19
 
 ### DEC-009 — Mascotas como entidad de primera clase
@@ -180,15 +209,17 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 
 | Prioridad | Ítem | Depende de |
 |---|---|---|
-| P1 | UI de anécdotas/hitos por persona | Modelo `Anecdote` |
-| P1 | UI de mascotas (ficha + presencia visual) | Modelo `Pet` (DEC-009) |
-| P1 | Invitaciones familiares + roles (colaborativo) | Membership/Invitation (DEC-005) |
-| P2 | IA: narración automática de biografías | Proxy LLM (DEC-003) |
+| ✅ Hecho | Autenticación (enlace mágico) + invitaciones familiares + roles | DEC-010, DEC-011 |
+| ✅ Hecho | UI de anécdotas/hitos por persona | Modelo `Anecdote` |
+| ✅ Hecho | UI de mascotas (ficha + dueños) | Modelo `Pet` (DEC-009) |
+| ✅ Hecho | Presencia visual de mascotas en el lienzo (badge 🐾) | TreeCanvas |
+| ✅ Hecho | IA: narración automática de biografías | Proxy LLM (DEC-003) |
+| ✅ Hecho | Canal de feedback del usuario (estándar LOGAN) | DEC-012 |
 | P2 | IA: entrevista guiada de recuerdos | Proxy LLM (DEC-003) |
 | P2 | Vistas alternativas: línea de tiempo, fan chart | Grafo (DEC-006) |
+| P2 | Mascota como nodo propio navegable (no solo badge) | TreeCanvas |
 | P3 | Import/Export GEDCOM | Grafo (DEC-006) |
 | P3 | Internacionalización (i18n) | DEC-008 |
-| P3 | Canal de feedback del usuario (estándar LOGAN) | — |
 
 > **Nota de estándar LOGAN:** toda app del ecosistema debe incluir un canal de "Enviar comentarios" (modelo Feedback + endpoint público con rate-limit + honeypot). Registrado en backlog P3 para incorporarlo antes del lanzamiento.
 

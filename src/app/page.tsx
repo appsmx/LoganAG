@@ -17,10 +17,10 @@ export default function Home() {
         </p>
         <div className="mt-8 flex items-center justify-center gap-4">
           <Link
-            href="/arbol"
+            href="/entrar"
             className="rounded-lg bg-leaf-600 px-6 py-3 font-semibold text-white transition hover:bg-leaf-700"
           >
-            Ver demo del árbol
+            Entrar / Crear mi árbol
           </Link>
           <Link
             href="/privacidad"

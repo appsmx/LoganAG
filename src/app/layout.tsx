@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import FeedbackButton from "@/components/FeedbackButton";
 
 export const metadata: Metadata = {
   title: "LoganAG — Tu árbol genealógico vivo",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es-MX">
-      <body className="min-h-screen bg-bark-50 text-bark-900">{children}</body>
+      <body className="min-h-screen bg-bark-50 text-bark-900">
+        {children}
+        <FeedbackButton />
+      </body>
     </html>
   );
 }
