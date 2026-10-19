@@ -10,10 +10,20 @@ import RelationshipForm from "@/components/RelationshipForm";
 import AnecdotesPanel from "@/components/AnecdotesPanel";
 import PetsPanel from "@/components/PetsPanel";
 import InvitePanel from "@/components/InvitePanel";
+import TimelinePanel from "@/components/TimelinePanel";
+import InterviewPanel from "@/components/InterviewPanel";
 import type { PersonDTO, TreeGraph } from "@/lib/types";
 import { fullName } from "@/lib/utils";
 
-type Panel = "detail" | "new" | "link" | "ai" | "pets" | "invite";
+type Panel =
+  | "detail"
+  | "new"
+  | "link"
+  | "ai"
+  | "pets"
+  | "invite"
+  | "timeline"
+  | "interview";
 
 export default function ArbolPage() {
   const router = useRouter();
@@ -104,8 +114,20 @@ export default function ArbolPage() {
               >
                 🤖 Describir familia
               </button>
+              <button
+                onClick={() => setPanel("interview")}
+                className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700"
+              >
+                🤖 Entrevista
+              </button>
             </>
           )}
+          <button
+            onClick={() => setPanel("timeline")}
+            className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
+          >
+            🕰️ Línea de tiempo
+          </button>
           <button
             onClick={() => setPanel("pets")}
             className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
@@ -222,6 +244,14 @@ export default function ArbolPage() {
 
           {panel === "invite" && (
             <InvitePanel onClose={() => setPanel("detail")} />
+          )}
+
+          {panel === "timeline" && (
+            <TimelinePanel onClose={() => setPanel("detail")} />
+          )}
+
+          {panel === "interview" && canEdit && (
+            <InterviewPanel onClose={() => setPanel("detail")} />
           )}
 
           {panel === "detail" &&

@@ -27,6 +27,7 @@
 | DEC-012 | Canal de feedback del usuario (estándar LOGAN) | OPERATIVA |
 | DEC-013 | Cimientos de calidad: ESLint + Prettier + Vitest + CI | ESTRUCTURAL |
 | DEC-014 | Carga de fotos vía Cloudinary con subida firmada | ESTRUCTURAL |
+| DEC-015 | Panel de administración de feedback restringido por correo | OPERATIVA |
 
 ---
 
@@ -149,6 +150,14 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 - **Consecuencias:** Toda operación de escritura valida el rol del usuario sobre el árbol. Las invitaciones se envían por Brevo (igual que el enlace mágico).
 - **Fecha:** 2026-10-19
 
+### DEC-015 — Panel de administración de feedback restringido por correo
+- **Nivel:** OPERATIVA
+- **Problema:** El feedback (DEC-012) se guarda pero no había forma de leerlo; y debe verlo solo el equipo, no cualquier usuario.
+- **Decisión:** Página `/admin/feedback` + `GET/PATCH /api/admin/feedback`, restringidas al usuario cuyo correo coincide con la variable `ADMIN_EMAIL`. Permite listar y marcar como atendido.
+- **Justificación:** Control simple y suficiente para el MVP sin introducir un sistema de roles global de aplicación. El feedback es global (no por árbol), así que su acceso se gobierna por `ADMIN_EMAIL`, no por el rol de árbol (DEC-011).
+- **Consecuencias:** Variable `ADMIN_EMAIL` requerida para habilitar el panel. Si no está, el panel responde 403.
+- **Fecha:** 2026-10-19
+
 ### DEC-014 — Carga de fotos vía Cloudinary con subida firmada
 - **Nivel:** ESTRUCTURAL
 - **Problema:** Las personas tenían `photoUrl` pero no había forma de subir fotos; un árbol con caras es mucho más emotivo.
@@ -235,8 +244,10 @@ El producto no es solo un registro: es una herramienta de **aprendizaje y enseñ
 | ✅ Hecho | Presencia visual de mascotas en el lienzo (badge 🐾) | TreeCanvas |
 | ✅ Hecho | IA: narración automática de biografías | Proxy LLM (DEC-003) |
 | ✅ Hecho | Canal de feedback del usuario (estándar LOGAN) | DEC-012 |
-| P2 | IA: entrevista guiada de recuerdos | Proxy LLM (DEC-003) |
-| P2 | Vistas alternativas: línea de tiempo, fan chart | Grafo (DEC-006) |
+| ✅ Hecho | IA: entrevista guiada de recuerdos | Proxy LLM (DEC-003) |
+| ✅ Hecho | Vista de línea de tiempo familiar | Grafo (DEC-006) |
+| ✅ Hecho | Panel de administración de feedback | DEC-012, DEC-015 |
+| P2 | Fan chart (vista de abanico) | Grafo (DEC-006) |
 | P2 | Mascota como nodo propio navegable (no solo badge) | TreeCanvas |
 | P3 | Import/Export GEDCOM | Grafo (DEC-006) |
 | P3 | Internacionalización (i18n) | DEC-008 |
