@@ -46,9 +46,20 @@ Avance: Biblia con 9 decisiones (DEC-001..009), scaffold técnico y MVP del árb
 - IA que inventa/vincula mal (mitigar con confirmación humana obligatoria).
 - Datos de personas vivas sin base legal (mitigar con consentimiento + privado por defecto).
 
-## Próximo objetivo (prioridad confirmada por el usuario)
-1. **Autenticación + invitaciones familiares** (modo colaborativo con roles dueño/colaborador/lector). El esquema ya lo reserva (Tree/Membership/Invitation/User). Reemplaza el "árbol demo" (`getOrCreateDemoTree`) por árboles reales por usuario.
-2. **UI de anécdotas y mascotas** (modelos `Anecdote` y `Pet`/`PetOwner` ya existen en el esquema).
+## Entregado (PR #3 — rama feat/auth-invitaciones-anecdotas)
+1. ✅ **Autenticación por enlace mágico** (DEC-010): `/api/auth/request|verify|me|logout`, sesión en cookie firmada, correo vía Brevo con fallback dev. Página `/entrar`.
+2. ✅ **Invitaciones familiares + roles** (DEC-011): OWNER/COLLABORATOR/VIEWER, `/api/invitations` (+accept), página `/invitacion/[token]`, panel InvitePanel. Retirado el "árbol demo"; ahora cada usuario tiene árboles reales con control de acceso por rol en TODAS las rutas (`resolveContext`).
+3. ✅ **UI de anécdotas e hitos** por persona (AnecdotesPanel + `/api/persons/[id]/anecdotes`, `/api/anecdotes/[id]`).
+4. ✅ **UI de mascotas** (DEC-009): PetsPanel + `/api/pets` (+[id]), ligadas a uno o varios dueños.
+5. ✅ **Seed** (`prisma/seed.ts`, `npm run db:seed`): familia de ejemplo (7 personas, 10 vínculos, 2 anécdotas, 1 mascota).
+6. ✅ **Corrección crítica**: el cliente LLM se alineó al contrato REAL del proxy (`{ task, systemPrompt, userMessage }` → `{ text }`) y a la URL canónica verificada en vivo `https://www.loganos.com/api/llm` (lo anterior, `logancorp.vercel.app` con el formato `messages[]`, habría fallado en producción).
+
+Verificado: `tsc --noEmit` y `next build` en verde (23 rutas).
+
+## Próximo objetivo
+- Presencia visual de las mascotas dentro del lienzo del árbol (hoy tienen ficha pero no nodo visual).
+- Enriquecer la IA: narración de biografías (P2).
+- Antes de desplegar: BD Neon + `prisma db push` + variables en Vercel.
 
 ## Configuración de entorno (pendiente del usuario)
 - **Local (desarrollo):** archivo `.env` en la raíz (copiar de `.env.example`). Nunca se sube (está en `.gitignore`).

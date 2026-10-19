@@ -28,6 +28,35 @@ model User {
   ownedTrees  Tree[]       @relation("TreeOwner")
   memberships Membership[]
   invitesSent Invitation[] @relation("InvitationInviter")
+  sessions    Session[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// Autenticación por enlace mágico (DEC-010)
+// ─────────────────────────────────────────────────────────────
+
+// Token de un solo uso enviado por correo. Al abrirlo, se crea una Session.
+model MagicLink {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique // guardamos el hash, nunca el token en claro
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// Sesión persistida. La cookie del navegador guarda el hash de este token.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Tree {

@@ -1,22 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateDemoTree, parseDate } from "@/lib/tree-service";
+import { parseDate } from "@/lib/tree-service";
 import { personCreateSchema } from "@/lib/validation";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/persons — lista de personas del árbol demo. */
+/** GET /api/persons — lista de personas del árbol activo. */
 export async function GET() {
-  const treeId = await getOrCreateDemoTree();
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+
   const persons = await prisma.person.findMany({
-    where: { treeId },
+    where: { treeId: ctx.treeId },
     orderBy: { firstName: "asc" },
   });
   return NextResponse.json({ persons });
 }
 
-/** POST /api/persons — crea una persona. */
+/** POST /api/persons — crea una persona (requiere rol editor). */
 export async function POST(req: NextRequest) {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -32,12 +41,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const treeId = await getOrCreateDemoTree();
   const d = parsed.data;
-
   const person = await prisma.person.create({
     data: {
-      treeId,
+      treeId: ctx.treeId,
       firstName: d.firstName,
       lastName: d.lastName ?? null,
       nickname: d.nickname ?? null,

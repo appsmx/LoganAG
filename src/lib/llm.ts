@@ -2,16 +2,25 @@
 // DEC-003: LoganAG NO usa llaves de IA propias. Toda la IA pasa por POST /api/llm
 // de LOGAN OS, que cascada entre proveedores (Z.ai / GLM primario, Gemini fallback).
 //
+// Contrato real del proxy (verificado en appsmx/logan-app · src/app/api/llm/route.ts):
+//   Request:  { task, systemPrompt, userMessage, history?, temperature?, maxTokens?,
+//               project?, tenant?, client?, channel? }
+//   Auth:     Authorization: Bearer <LOGAN_LLM_SECRET>
+//   Response: { text, provider, model, usage? }
+//
 // Variables de entorno requeridas:
-//   LOGAN_LLM_URL     — endpoint del proxy (p.ej. https://logancorp.vercel.app/api/llm)
+//   LOGAN_LLM_URL     — endpoint del proxy (https://www.loganos.com/api/llm)
 //   LOGAN_LLM_SECRET  — Bearer que LoganAG envía a LOGAN OS para consumir el proxy
 
-export interface LlmMessage {
-  role: "system" | "user" | "assistant";
+export interface LlmHistoryMessage {
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
-export interface LlmOptions {
+export interface LlmRequest {
+  systemPrompt: string;
+  userMessage: string;
+  history?: LlmHistoryMessage[];
   temperature?: number;
   maxTokens?: number;
 }
@@ -23,14 +32,13 @@ export class LlmError extends Error {
   }
 }
 
+// Identificación del producto para el control de gasto del proxy (DEC-003).
+const PROJECT_SLUG = "loganag";
+
 /**
- * Invoca el proxy LLM de LOGAN OS con una lista de mensajes.
- * Devuelve el texto de la respuesta del modelo.
+ * Invoca el proxy LLM de LOGAN OS y devuelve el texto de la respuesta del modelo.
  */
-export async function callLlm(
-  messages: LlmMessage[],
-  options: LlmOptions = {}
-): Promise<string> {
+export async function callLlm(req: LlmRequest): Promise<string> {
   const url = process.env.LOGAN_LLM_URL;
   const secret = process.env.LOGAN_LLM_SECRET;
 
@@ -49,9 +57,14 @@ export async function callLlm(
         Authorization: `Bearer ${secret}`,
       },
       body: JSON.stringify({
-        messages,
-        temperature: options.temperature ?? 0.2,
-        max_tokens: options.maxTokens ?? 2048,
+        task: "assistant",
+        systemPrompt: req.systemPrompt,
+        userMessage: req.userMessage,
+        history: req.history ?? [],
+        temperature: req.temperature ?? 0.2,
+        maxTokens: req.maxTokens ?? 2048,
+        project: PROJECT_SLUG,
+        channel: "web",
       }),
     });
   } catch (err) {
@@ -67,17 +80,11 @@ export async function callLlm(
     );
   }
 
-  const data = (await res.json()) as {
-    content?: string;
-    choices?: { message?: { content?: string } }[];
-  };
-
-  // Soporta tanto { content } como el formato OpenAI-like { choices[].message.content }.
-  const content = data.content ?? data.choices?.[0]?.message?.content;
-  if (!content) {
+  const data = (await res.json()) as { text?: string };
+  if (!data.text) {
     throw new LlmError("El proxy LLM no devolvió contenido utilizable.");
   }
-  return content;
+  return data.text;
 }
 
 /** Extrae el primer bloque JSON de un texto (robusto ante prosa alrededor). */

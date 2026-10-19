@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { proposeGraphFromText } from "@/lib/ai-intake";
 import { intakeSchema } from "@/lib/validation";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -11,6 +12,12 @@ export const maxDuration = 30;
  * El usuario debe confirmarlo luego vía /api/ai/confirm.
  */
 export async function POST(req: NextRequest) {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
