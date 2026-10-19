@@ -2,38 +2,53 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import TreeCanvas from "@/components/TreeCanvas";
 import AiIntakePanel from "@/components/AiIntakePanel";
 import PersonForm from "@/components/PersonForm";
 import RelationshipForm from "@/components/RelationshipForm";
+import AnecdotesPanel from "@/components/AnecdotesPanel";
+import PetsPanel from "@/components/PetsPanel";
+import InvitePanel from "@/components/InvitePanel";
 import type { PersonDTO, TreeGraph } from "@/lib/types";
 import { fullName } from "@/lib/utils";
 
+type Panel = "detail" | "new" | "link" | "ai" | "pets" | "invite";
+
 export default function ArbolPage() {
-  const [graph, setGraph] = useState<TreeGraph>({
-    persons: [],
-    relationships: [],
-  });
+  const router = useRouter();
+  const [graph, setGraph] = useState<TreeGraph>({ persons: [], relationships: [] });
   const [loading, setLoading] = useState(true);
+  const [canEdit, setCanEdit] = useState(false);
+  const [me, setMe] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [panel, setPanel] = useState<"detail" | "new" | "link" | "ai">("detail");
+  const [panel, setPanel] = useState<Panel>("detail");
 
   const loadGraph = useCallback(async () => {
     const res = await fetch("/api/tree", { cache: "no-store" });
+    if (res.status === 401) {
+      router.push("/entrar");
+      return;
+    }
     const data = await res.json();
     const g: TreeGraph = {
       persons: data.persons ?? [],
       relationships: data.relationships ?? [],
     };
     setGraph(g);
+    setCanEdit(Boolean(data.access?.canEdit));
     setLoading(false);
-    if (!focusId && g.persons.length > 0) setFocusId(g.persons[0].id);
-  }, [focusId]);
+    setFocusId((prev) => prev ?? (g.persons[0]?.id ?? null));
+  }, [router]);
 
   useEffect(() => {
     loadGraph();
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setMe(d.user?.email ?? null))
+      .catch(() => {});
   }, [loadGraph]);
 
   const selected = useMemo(
@@ -49,6 +64,11 @@ export default function ArbolPage() {
     });
   };
 
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/entrar");
+  }
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -57,38 +77,48 @@ export default function ArbolPage() {
             ← Inicio
           </Link>
           <h1 className="text-2xl font-bold text-bark-900">Mi familia 🌳</h1>
+          {me && <p className="text-xs text-bark-500">{me}</p>}
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPanel("new")}
-            className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700"
-          >
-            + Persona
+        <div className="flex flex-wrap gap-2">
+          {canEdit && (
+            <>
+              <button onClick={() => setPanel("new")} className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700">
+                + Persona
+              </button>
+              <button onClick={() => setPanel("link")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+                Vincular
+              </button>
+              <button onClick={() => setPanel("ai")} className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700">
+                🤖 Describir familia
+              </button>
+            </>
+          )}
+          <button onClick={() => setPanel("pets")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+            🐾 Mascotas
           </button>
-          <button
-            onClick={() => setPanel("link")}
-            className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100"
-          >
-            Vincular
+          <button onClick={() => setPanel("invite")} className="rounded-lg border border-bark-200 px-4 py-2 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+            👪 Familia
           </button>
-          <button
-            onClick={() => setPanel("ai")}
-            className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700 hover:bg-leaf-100/70"
-          >
-            🤖 Describir familia
+          <button onClick={logout} className="rounded-lg border border-bark-200 px-3 py-2 text-sm text-bark-500 hover:bg-bark-100">
+            Salir
           </button>
         </div>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        {/* Lienzo */}
+      {!canEdit && !loading && (
+        <p className="mb-3 rounded-lg bg-bark-100 px-3 py-2 text-sm text-bark-700">
+          Tienes acceso de solo lectura a este árbol.
+        </p>
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         <section className="min-h-[480px]">
           {loading ? (
             <div className="flex h-[480px] items-center justify-center text-bark-600">
               Cargando árbol…
             </div>
           ) : graph.persons.length === 0 ? (
-            <EmptyState onAdd={() => setPanel("new")} onAi={() => setPanel("ai")} />
+            <EmptyState canEdit={canEdit} onAdd={() => setPanel("new")} onAi={() => setPanel("ai")} />
           ) : (
             <TreeCanvas
               graph={graph}
@@ -104,14 +134,12 @@ export default function ArbolPage() {
             />
           )}
           <p className="mt-2 text-xs text-bark-500">
-            Clic para seleccionar · doble clic para enfocar · − / + para
-            colapsar o expandir ramas.
+            Clic para seleccionar · doble clic para enfocar · − / + para colapsar o expandir ramas.
           </p>
         </section>
 
-        {/* Panel lateral */}
         <aside className="rounded-xl border border-bark-200 bg-white/60 p-4">
-          {panel === "ai" && (
+          {panel === "ai" && canEdit && (
             <AiIntakePanel
               existingPersons={graph.persons}
               onConfirmed={async () => {
@@ -122,19 +150,19 @@ export default function ArbolPage() {
             />
           )}
 
-          {panel === "new" && (
+          {panel === "new" && canEdit && (
             <PersonForm
               onSaved={async (p) => {
                 await loadGraph();
                 setSelectedId(p.id);
-                if (!focusId) setFocusId(p.id);
+                setFocusId((prev) => prev ?? p.id);
                 setPanel("detail");
               }}
               onCancel={() => setPanel("detail")}
             />
           )}
 
-          {panel === "link" && (
+          {panel === "link" && canEdit && (
             <RelationshipForm
               persons={graph.persons}
               onSaved={async () => {
@@ -145,10 +173,17 @@ export default function ArbolPage() {
             />
           )}
 
+          {panel === "pets" && (
+            <PetsPanel persons={graph.persons} canEdit={canEdit} onClose={() => setPanel("detail")} />
+          )}
+
+          {panel === "invite" && <InvitePanel onClose={() => setPanel("detail")} />}
+
           {panel === "detail" &&
             (selected ? (
               <PersonDetail
                 person={selected}
+                canEdit={canEdit}
                 onFocus={() => setFocusId(selected.id)}
                 onEdited={loadGraph}
                 onDeleted={async () => {
@@ -176,46 +211,49 @@ export default function ArbolPage() {
 }
 
 function EmptyState({
+  canEdit,
   onAdd,
   onAi,
 }: {
+  canEdit: boolean;
   onAdd: () => void;
   onAi: () => void;
 }) {
   return (
     <div className="flex h-[480px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-bark-200 bg-white/40 text-center">
-      <p className="text-lg font-semibold text-bark-800">
-        Tu árbol está vacío
-      </p>
-      <p className="max-w-sm text-sm text-bark-600">
-        Empieza agregando a la primera persona, o describe a tu familia en
-        lenguaje natural y deja que la IA la proponga.
-      </p>
-      <div className="flex gap-3">
-        <button
-          onClick={onAdd}
-          className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700"
-        >
-          + Agregar persona
-        </button>
-        <button
-          onClick={onAi}
-          className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700"
-        >
-          🤖 Describir familia
-        </button>
-      </div>
+      <p className="text-lg font-semibold text-bark-800">Tu árbol está vacío</p>
+      {canEdit ? (
+        <>
+          <p className="max-w-sm text-sm text-bark-600">
+            Empieza agregando a la primera persona, o describe a tu familia en lenguaje natural y deja que la IA la proponga.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={onAdd} className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-700">
+              + Agregar persona
+            </button>
+            <button onClick={onAi} className="rounded-lg border border-leaf-400 bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-700">
+              🤖 Describir familia
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="max-w-sm text-sm text-bark-600">
+          Aún no hay personas en este árbol.
+        </p>
+      )}
     </div>
   );
 }
 
 function PersonDetail({
   person,
+  canEdit,
   onFocus,
   onEdited,
   onDeleted,
 }: {
   person: PersonDTO;
+  canEdit: boolean;
   onFocus: () => void;
   onEdited: () => Promise<void>;
   onDeleted: () => Promise<void>;
@@ -238,9 +276,7 @@ function PersonDetail({
   return (
     <div>
       <h2 className="text-lg font-bold text-bark-900">{fullName(person)}</h2>
-      {person.nickname && (
-        <p className="text-sm italic text-bark-600">«{person.nickname}»</p>
-      )}
+      {person.nickname && <p className="text-sm italic text-bark-600">«{person.nickname}»</p>}
       <dl className="mt-3 space-y-1 text-sm text-bark-700">
         <Row label="Nacimiento" value={person.birthDate && new Date(person.birthDate).toLocaleDateString("es-MX")} />
         <Row label="Lugar" value={person.birthPlace} />
@@ -250,34 +286,34 @@ function PersonDetail({
         <Row label="Estado" value={person.isLiving ? "Viva" : "Fallecida"} />
       </dl>
       {person.notes && (
-        <p className="mt-3 rounded bg-bark-50 p-2 text-sm text-bark-700">
-          {person.notes}
-        </p>
+        <p className="mt-3 rounded bg-bark-50 p-2 text-sm text-bark-700">{person.notes}</p>
       )}
+
       <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          onClick={onFocus}
-          className="rounded-lg bg-leaf-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-leaf-700"
-        >
+        <button onClick={onFocus} className="rounded-lg bg-leaf-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-leaf-700">
           Enfocar
         </button>
-        <button
-          onClick={() => setEditing(true)}
-          className="rounded-lg border border-bark-200 px-3 py-1.5 text-sm font-semibold text-bark-700 hover:bg-bark-100"
-        >
-          Editar
-        </button>
-        <button
-          onClick={async () => {
-            if (!confirm(`¿Eliminar a ${fullName(person)}?`)) return;
-            await fetch(`/api/persons/${person.id}`, { method: "DELETE" });
-            await onDeleted();
-          }}
-          className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
-        >
-          Eliminar
-        </button>
+        {canEdit && (
+          <>
+            <button onClick={() => setEditing(true)} className="rounded-lg border border-bark-200 px-3 py-1.5 text-sm font-semibold text-bark-700 hover:bg-bark-100">
+              Editar
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm(`¿Eliminar a ${fullName(person)}?`)) return;
+                await fetch(`/api/persons/${person.id}`, { method: "DELETE" });
+                await onDeleted();
+              }}
+              className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              Eliminar
+            </button>
+          </>
+        )}
       </div>
+
+      {/* Anécdotas e hitos (DEC-002 P1) */}
+      <AnecdotesPanel personId={person.id} canEdit={canEdit} />
     </div>
   );
 }

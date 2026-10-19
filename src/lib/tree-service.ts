@@ -1,43 +1,91 @@
-// Capa de servicio del árbol. Encapsula el acceso a datos vía Prisma.
+// Capa de servicio del árbol. Encapsula el acceso a datos y el control de roles.
 //
-// NOTA MVP: el MVP opera sobre un "árbol demo" único para validar la propuesta de
-// valor (DEC-002). La autenticación de usuarios y la multi-tenencia por invitación
-// (DEC-005) ya están reservadas en el esquema (Tree/Membership/Invitation) y se
-// activan en la siguiente iteración (backlog P1).
+// Tras DEC-010/DEC-011, los árboles pertenecen a usuarios autenticados y el acceso
+// se controla por Membership (OWNER / COLLABORATOR / VIEWER). El "árbol demo" fue
+// retirado: cada usuario trabaja sobre árboles reales.
 
 import { prisma } from "./prisma";
 import type { TreeGraph } from "./types";
+import type { MembershipRole } from "@prisma/client";
 
-const DEMO_OWNER_EMAIL = "demo@loganag.local";
-const DEMO_TREE_NAME = "Mi familia";
-
-/** Obtiene (o crea) el árbol demo y su dueño. Devuelve el treeId. */
-export async function getOrCreateDemoTree(): Promise<string> {
-  const owner = await prisma.user.upsert({
-    where: { email: DEMO_OWNER_EMAIL },
-    update: {},
-    create: { email: DEMO_OWNER_EMAIL, name: "Demo" },
-  });
-
-  const existing = await prisma.tree.findFirst({
-    where: { ownerId: owner.id },
+/** Garantiza que todo usuario tenga al menos un árbol propio; devuelve su id. */
+export async function getOrCreatePrimaryTree(userId: string): Promise<string> {
+  const owned = await prisma.tree.findFirst({
+    where: { ownerId: userId },
     orderBy: { createdAt: "asc" },
   });
-  if (existing) return existing.id;
+  if (owned) return owned.id;
 
-  const tree = await prisma.tree.create({
-    data: { name: DEMO_TREE_NAME, ownerId: owner.id, visibility: "PRIVATE" },
+  const tree = await prisma.$transaction(async (tx) => {
+    const created = await tx.tree.create({
+      data: { name: "Mi familia", ownerId: userId, visibility: "PRIVATE" },
+    });
+    // El dueño también es miembro OWNER (unifica el control de acceso por rol).
+    await tx.membership.create({
+      data: { treeId: created.id, userId, role: "OWNER" },
+    });
+    return created;
   });
   return tree.id;
+}
+
+export interface Access {
+  role: MembershipRole;
+  canView: boolean;
+  canEdit: boolean;
+  isOwner: boolean;
+}
+
+/** Devuelve el rol del usuario sobre un árbol, o null si no tiene acceso. */
+export async function getAccess(
+  treeId: string,
+  userId: string
+): Promise<Access | null> {
+  const tree = await prisma.tree.findUnique({ where: { id: treeId } });
+  if (!tree) return null;
+
+  // dueño directo
+  if (tree.ownerId === userId) {
+    return { role: "OWNER", canView: true, canEdit: true, isOwner: true };
+  }
+
+  const membership = await prisma.membership.findUnique({
+    where: { treeId_userId: { treeId, userId } },
+  });
+  if (!membership) return null;
+
+  const role = membership.role;
+  return {
+    role,
+    canView: true,
+    canEdit: role === "OWNER" || role === "COLLABORATOR",
+    isOwner: role === "OWNER",
+  };
+}
+
+/** Lanza si el usuario no puede ver / editar el árbol. */
+export async function assertCanView(treeId: string, userId: string): Promise<Access> {
+  const a = await getAccess(treeId, userId);
+  if (!a?.canView) throw new TreeAccessError("Sin acceso a este árbol.");
+  return a;
+}
+export async function assertCanEdit(treeId: string, userId: string): Promise<Access> {
+  const a = await getAccess(treeId, userId);
+  if (!a?.canEdit) throw new TreeAccessError("No tienes permiso para editar este árbol.");
+  return a;
+}
+
+export class TreeAccessError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TreeAccessError";
+  }
 }
 
 /** Devuelve el grafo completo (personas + relaciones) de un árbol. */
 export async function getTreeGraph(treeId: string): Promise<TreeGraph> {
   const [persons, relationships] = await Promise.all([
-    prisma.person.findMany({
-      where: { treeId },
-      orderBy: { createdAt: "asc" },
-    }),
+    prisma.person.findMany({ where: { treeId }, orderBy: { createdAt: "asc" } }),
     prisma.relationship.findMany({ where: { treeId } }),
   ]);
 

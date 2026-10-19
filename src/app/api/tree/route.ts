@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
-import { getOrCreateDemoTree, getTreeGraph } from "@/lib/tree-service";
+import { getTreeGraph } from "@/lib/tree-service";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/tree — grafo completo del árbol demo. */
+/** GET /api/tree — grafo completo del árbol activo del usuario autenticado. */
 export async function GET() {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+
   try {
-    const treeId = await getOrCreateDemoTree();
-    const graph = await getTreeGraph(treeId);
-    return NextResponse.json({ treeId, ...graph });
-  } catch (err) {
-    return NextResponse.json(
-      { error: "No se pudo cargar el árbol." },
-      { status: 500 }
-    );
+    const graph = await getTreeGraph(ctx.treeId);
+    return NextResponse.json({ treeId: ctx.treeId, access: ctx.access, ...graph });
+  } catch {
+    return NextResponse.json({ error: "No se pudo cargar el árbol." }, { status: 500 });
   }
 }

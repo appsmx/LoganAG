@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateDemoTree, parseDate } from "@/lib/tree-service";
+import { parseDate } from "@/lib/tree-service";
 import { personUpdateSchema } from "@/lib/validation";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
-/** PATCH /api/persons/[id] — actualiza una persona. */
+/** PATCH /api/persons/[id] — actualiza una persona (requiere rol editor). */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const treeId = await getOrCreateDemoTree();
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
 
-  const existing = await prisma.person.findFirst({ where: { id, treeId } });
+  const existing = await prisma.person.findFirst({
+    where: { id, treeId: ctx.treeId },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
   }
@@ -54,20 +61,25 @@ export async function PATCH(
   return NextResponse.json({ person });
 }
 
-/** DELETE /api/persons/[id] — elimina una persona y sus relaciones. */
+/** DELETE /api/persons/[id] — elimina una persona (requiere rol editor). */
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const treeId = await getOrCreateDemoTree();
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
 
-  const existing = await prisma.person.findFirst({ where: { id, treeId } });
+  const existing = await prisma.person.findFirst({
+    where: { id, treeId: ctx.treeId },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Persona no encontrada." }, { status: 404 });
   }
 
-  // onDelete: Cascade en Relationship elimina las aristas asociadas.
   await prisma.person.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

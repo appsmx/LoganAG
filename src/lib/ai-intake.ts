@@ -50,13 +50,12 @@ export async function proposeGraphFromText(
 
   let raw: string;
   try {
-    raw = await callLlm(
-      [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: description.trim() },
-      ],
-      { temperature: 0.1, maxTokens: 2048 }
-    );
+    raw = await callLlm({
+      systemPrompt: SYSTEM_PROMPT,
+      userMessage: description.trim(),
+      temperature: 0.1,
+      maxTokens: 2048,
+    });
   } catch (err) {
     return {
       ok: false,

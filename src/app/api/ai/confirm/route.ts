@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateDemoTree, parseDate } from "@/lib/tree-service";
+import { parseDate } from "@/lib/tree-service";
 import { confirmGraphSchema } from "@/lib/validation";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,12 @@ export const dynamic = "force-dynamic";
  * Resuelve los tempId a ids reales dentro de una transacción.
  */
 export async function POST(req: NextRequest) {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -26,7 +33,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const treeId = await getOrCreateDemoTree();
+  const treeId = ctx.treeId;
   const { persons, relationships } = parsed.data;
 
   try {

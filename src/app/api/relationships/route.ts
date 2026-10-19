@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateDemoTree } from "@/lib/tree-service";
 import { relationshipCreateSchema } from "@/lib/validation";
+import { resolveContext, isResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
-/** POST /api/relationships — crea un vínculo entre dos personas. */
+/** POST /api/relationships — crea un vínculo entre dos personas (rol editor). */
 export async function POST(req: NextRequest) {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -30,11 +36,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const treeId = await getOrCreateDemoTree();
-
-  // ambas personas deben pertenecer al árbol
   const count = await prisma.person.count({
-    where: { treeId, id: { in: [personAId, personBId] } },
+    where: { treeId: ctx.treeId, id: { in: [personAId, personBId] } },
   });
   if (count !== 2) {
     return NextResponse.json(
@@ -45,26 +48,29 @@ export async function POST(req: NextRequest) {
 
   try {
     const relationship = await prisma.relationship.create({
-      data: { treeId, type, personAId, personBId },
+      data: { treeId: ctx.treeId, type, personAId, personBId },
     });
     return NextResponse.json({ relationship }, { status: 201 });
   } catch {
-    // viola @@unique([treeId, type, personAId, personBId])
-    return NextResponse.json(
-      { error: "Ese vínculo ya existe." },
-      { status: 409 }
-    );
+    return NextResponse.json({ error: "Ese vínculo ya existe." }, { status: 409 });
   }
 }
 
-/** DELETE /api/relationships?id=... — elimina un vínculo. */
+/** DELETE /api/relationships?id=... — elimina un vínculo (rol editor). */
 export async function DELETE(req: NextRequest) {
+  const ctx = await resolveContext();
+  if (isResponse(ctx)) return ctx;
+  if (!ctx.access.canEdit) {
+    return NextResponse.json({ error: "Solo lectura." }, { status: 403 });
+  }
+
   const id = req.nextUrl.searchParams.get("id");
   if (!id) {
     return NextResponse.json({ error: "Falta el id." }, { status: 400 });
   }
-  const treeId = await getOrCreateDemoTree();
-  const existing = await prisma.relationship.findFirst({ where: { id, treeId } });
+  const existing = await prisma.relationship.findFirst({
+    where: { id, treeId: ctx.treeId },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Vínculo no encontrado." }, { status: 404 });
   }
